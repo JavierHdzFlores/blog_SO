@@ -161,10 +161,10 @@ export function Home() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Javier Hernandez Flores
+                  Javier Hernandez Flores, Marlen
                 </p>
                 <p className="text-xs text-muted-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Matrícula: 20222064 · Ing. Computación · UTM
+                  Matrícula: 2022020208 · Ing. Computación · UTM
                 </p>
               </div>
             </div>

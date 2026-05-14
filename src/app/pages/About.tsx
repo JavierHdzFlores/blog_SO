@@ -42,10 +42,10 @@ export function About() {
           </div>
           <div>
             <h2 className="text-foreground" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
-              Carlos Hernández González
+              Javier, Marlen
             </h2>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              Matrícula: 20222064
+              Matrícula: 2022020208, Matricula: 
             </p>
           </div>
 
