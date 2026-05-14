@@ -127,9 +127,9 @@ export function Sidebar() {
         <p className="text-xs text-muted-foreground leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
           <span className="font-semibold text-foreground">Materia:</span> Sistemas Operativos
           <br />
-          <span className="font-semibold text-foreground">Semestre:</span> 4to — 2025
+          <span className="font-semibold text-foreground">Semestre:</span> 6to — 2025
           <br />
-          <span className="font-semibold text-foreground">Docente:</span> Dr. López Martínez
+          <span className="font-semibold text-foreground">Docente:</span> Dr. Gabriel Gerónimo Castillo
         </p>
       </div>
     </aside>

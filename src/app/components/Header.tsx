@@ -46,7 +46,7 @@ export function Header() {
               SOPortafolio
             </span>
             <span className="text-xs text-muted-foreground hidden sm:block" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              C. Hernández · UTM
+              Javier Hernández · UTM
             </span>
           </div>
         </Link>

@@ -161,7 +161,7 @@ export function Home() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Carlos Hernández González
+                  Javier Hernandez Flores
                 </p>
                 <p className="text-xs text-muted-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
                   Matrícula: 20222064 · Ing. Computación · UTM
