@@ -52,7 +52,7 @@ export function About() {
           <div className="w-full border-t border-border pt-4 flex flex-col gap-2">
             {[
               { icon: <GraduationCap className="size-4" />, label: "Ing. Computación" },
-              { icon: <BookOpen className="size-4" />, label: "4to Semestre" },
+              { icon: <BookOpen className="size-4" />, label: "6to Semestre" },
               { icon: <Award className="size-4" />, label: "UTM · 2022-2026" },
               { icon: <Mail className="size-4" />, label: "carlos@mixteca.edu.mx" },
             ].map((item, idx) => (
