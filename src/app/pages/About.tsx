@@ -71,10 +71,10 @@ export function About() {
               Presentación Personal
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Soy estudiante de cuarto semestre de Ingeniería en Computación en la Universidad Tecnológica de la Mixteca. Me apasiona la programación de sistemas, especialmente todo lo relacionado con la interacción entre software y hardware a bajo nivel. La materia de Sistemas Operativos ha sido fundamental para comprender cómo funciona la capa de software que hace posible que los programas de alto nivel se ejecuten de manera eficiente y segura.
+              Somos estudiante de sexto semestre de Ingeniería en Computación en la Universidad Tecnológica de la Mixteca. Nos apasiona la programación de sistemas, especialmente todo lo relacionado con la interacción entre software y hardware a bajo nivel. La materia de Sistemas Operativos ha sido fundamental para comprender cómo funciona la capa de software que hace posible que los programas de alto nivel se ejecuten de manera eficiente y segura.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed mt-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-              A través de las prácticas documentadas en este portafolio, he desarrollado habilidades en programación en C a nivel de sistema, manejo de concurrencia y paralelismo, y comprensión de los mecanismos internos del kernel de Linux.
+              A través de las prácticas documentadas en este portafolio, hemos desarrollado habilidades en programación en C a nivel de sistema, manejo de concurrencia y paralelismo, y comprensión de los mecanismos internos del kernel de Linux.
             </p>
           </div>
 
