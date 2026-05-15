@@ -67,7 +67,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            © 2025 — J. Hernández, Marlen Hernández · UTM · Sistemas Operativos
+            © 2026 — J. Hernández, Marlen Hernández · UTM · Sistemas Operativos
           </p>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>

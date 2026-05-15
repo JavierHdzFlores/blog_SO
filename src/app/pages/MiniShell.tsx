@@ -586,13 +586,13 @@ void listar_directorio(char *path, char *bandera) {
 /* ─── Secciones de "lo que aprendimos" ─────────────────────────── */
 const aprendizajes = [
   {
-    nombre: "Javier Hernandez",
+    nombre: "Javier Hernandez Flores",
     avatar: "JH",
     color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
     texto: "Construir el mini shell desde cero me hizo entender que casi nada en Linux es magia: ls es opendir+readdir+stat, ip es socket+ioctl, who es leer /run/utmp. Una vez que ves la syscall detrás de cada comando, el SO deja de ser una caja negra. La tabla de despacho con strcmp() fue la clave para organizar más de 20 comandos de forma limpia.",
   },
   {
-    nombre: "Marlen",
+    nombre: "Elvia Marlen Hernández García",
     avatar: "MR",
     color: "bg-violet-500/20 text-violet-400 border-violet-500/30",
     texto: "Lo más interesante fue el historial circular con el arreglo de MAX_HIST=512 entradas y la posición que avanza con módulo. El shell es el orquestador clásico: lee, parsea, despacha. Implementar comandos como cd o pwd me hizo apreciar lo que damos por sentado: cada cambio de directorio implica una llamada al kernel con validación de permisos.",

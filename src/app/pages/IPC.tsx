@@ -2,84 +2,169 @@ import { Network } from "lucide-react";
 import { PracticeCard } from "../components/PracticeCard";
 
 const practices = [
+  // ─────────────────────────────────────────────────────────────────
+  // 3.1 Comunicación mediante tuberías
+  // ─────────────────────────────────────────────────────────────────
   {
-    id: "ipc-practica-1",
+    id: "tema-3-1",
     number: 1,
-    title: "Tuberías sin nombre — pipe()",
+    title: "3.1 Comunicación mediante tuberías",
     difficulty: "Básico" as const,
-    tags: ["pipe", "IPC", "fork", "comunicación", "POSIX"],
+    tags: ["IPC", "tuberías", "pipe", "fifo", "comunicación", "procesos"],
     objective:
-      "Crear tuberías sin nombre con pipe() para comunicar un proceso padre con su hijo, comprender el flujo unidireccional de datos y el manejo correcto de los descriptores de lectura y escritura.",
-    theory: `Las tuberías sin nombre (pipes) son la forma más básica de IPC en UNIX. Presentan dos limitaciones fundamentales:
-1. Los datos fluyen en una sola dirección (half-duplex).
-2. Solo pueden usarse entre procesos que comparten un ancestro común.
+      "Comprender los mecanismos básicos de comunicación entre procesos mediante tuberías (pipes y FIFOs), sus características, limitaciones y diferencias fundamentales.",
+    theory: `Todos los procesos, parientes o no, necesitan en ocasiones comunicarse entre sí. El sistema brinda formas básicas de comunicación:
+• Stream: pipe, fifo y sockets.
+• Mensajes: colas de mensajes y sockets datagramas.
 
-El prototipo es:
+Si los procesos son parientes, la comunicación puede realizarse mediante una tubería (pipe). Si se necesita proteger el medio de comunicación se pueden utilizar mecanismos de sincronización.
+
+Las tuberías son mecanismos clásicos de comunicación entre dos o más procesos emparentados en la misma máquina. La teoría está basada en las facilidades IPC de los sistemas UNIX System V y derivados.
+
+Clasificación:
+• Tuberías sin nombre (pipe): comunicación entre procesos con ancestro común.
+• Tuberías con nombre (FIFO): comunicación entre procesos no emparentados, con nombre en el sistema de archivos.
+
+La teoría de IPC de System V también agrupa tres mecanismos adicionales con características en común:
+• Una tabla con entradas que describen el uso del mecanismo.
+• Una llave numérica elegida por el usuario para cada entrada de la tabla.
+• Cada mecanismo dispone de una llamada "get" para crear o recuperar entradas.
+• Cada entrada tiene un registro de permisos: ID de usuario y grupo del proceso creador.
+• Una llamada de "control" permite leer, modificar el estado o liberar la entrada.`,
+    code: `/* Resumen de los mecanismos IPC disponibles en UNIX/Linux
+
+   ┌─────────────────────┬─────────────────┬─────────────────────┐
+   │ Mecanismo IPC       │ Tipo de nombre  │ Identificación      │
+   ├─────────────────────┼─────────────────┼─────────────────────┤
+   │ pipe                │ Sin nombre      │ Descriptor archivo  │
+   │ FIFO                │ Nombre de ruta  │ Descriptor archivo  │
+   │ Cola de mensajes    │ Llave key_t     │ Identificador int   │
+   │ Memoria compartida  │ Llave key_t     │ Identificador int   │
+   │ Semáforo            │ Llave key_t     │ Identificador int   │
+   │ Socket UNIX         │ Nombre de ruta  │ Descriptor archivo  │
+   └─────────────────────┴─────────────────┴─────────────────────┘
+
+   Resumen de llamadas IPC derivadas de System V:
+   ┌───────────────────────┬──────────────┬───────────────┬───────────────┐
+   │ Operación             │ Semáforos    │ Memoria comp. │ Cola mensajes │
+   ├───────────────────────┼──────────────┼───────────────┼───────────────┤
+   │ Crear / abrir         │ semget       │ shmget        │ msgget        │
+   │ Operaciones control   │ semctl       │ shmctl        │ msgctl        │
+   │ Operaciones uso       │ semop        │ shmat, shmdt  │ msgsnd,msgrcv │
+   │ Bibliotecas           │ <sys/sem.h>  │ <sys/shm.h>   │ <sys/msg.h>   │
+   └───────────────────────┴──────────────┴───────────────┴───────────────┘
+
+   Bibliotecas comunes a todos: <sys/types.h>, <sys/ipc.h>
+*/
+
+#include <stdio.h>
+int main(void) {
+    printf("Mecanismos IPC en GNU/Linux:\\n");
+    printf("  1. Tuberías sin nombre (pipe)\\n");
+    printf("  2. Tuberías con nombre (FIFO)\\n");
+    printf("  3. Semáforos System V\\n");
+    printf("  4. Semáforos POSIX\\n");
+    printf("  5. Memoria compartida\\n");
+    printf("  6. Cola de mensajes\\n");
+    return 0;
+}`,
+    language: "c",
+    filename: "ipc_intro.c",
+    terminalLines: [
+      "$ ./ipc_intro",
+      "Mecanismos IPC en GNU/Linux:",
+      "  1. Tuberías sin nombre (pipe)",
+      "  2. Tuberías con nombre (FIFO)",
+      "  3. Semáforos System V",
+      "  4. Semáforos POSIX",
+      "  5. Memoria compartida",
+      "  6. Cola de mensajes",
+    ],
+    terminalTitle: "Terminal — bash · ipc_intro",
+    conclusion:
+      "Los mecanismos IPC se dividen en dos categorías principales: los basados en descriptores de archivo (pipe, FIFO, sockets) y los basados en llaves numéricas de System V (semáforos, memoria compartida, colas de mensajes). La elección del mecanismo depende de si los procesos son parientes, si se necesita persistencia y del tipo de datos a intercambiar.",
+    improvements:
+      "Estudiar los sockets de dominio UNIX como mecanismo IPC bidireccional más potente que el pipe. Analizar la diferencia de rendimiento entre memoria compartida y colas de mensajes para transferencia de grandes volúmenes de datos.",
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3.1.1 Tuberías sin nombre — pipe
+  // ─────────────────────────────────────────────────────────────────
+  {
+    id: "tema-3-1-1",
+    number: 2,
+    title: "3.1.1 Tuberías sin nombre — pipe()",
+    difficulty: "Básico" as const,
+    tags: ["pipe", "pipe2", "tubería", "IPC", "fork", "half-duplex"],
+    objective:
+      "Crear y utilizar tuberías sin nombre (pipe) para comunicar procesos padre e hijo, comprendiendo el flujo unidireccional de datos y la herencia de descriptores tras fork().",
+    theory: `Las tuberías sin nombre (pipe) son las formas más antiguas de IPC y están disponibles en todos los sistemas UNIX y derivados.
+
+Limitaciones de pipe:
+  1. Los datos fluyen en una sola dirección (half-duplex).
+  2. Solo pueden usarse entre procesos que tienen un ancestro en común.
+
+PROTOTIPO pipe():
+  #include <unistd.h>
   int pipe(int filedes[2]);
-  • filedes[0] → extremo de LECTURA.
-  • filedes[1] → extremo de ESCRITURA.
+
+  • filedes[0] → extremo de lectura (read end).
+  • filedes[1] → extremo de escritura (write end).
   • Retorna 0 en éxito, -1 en error.
+  • La salida de filedes[1] es la entrada de filedes[0].
 
-La función pipe2() (Linux ≥ 2.6.27) acepta flags adicionales:
-  • O_CLOEXEC  → cierra los descriptores al ejecutar exec.
-  • O_NONBLOCK → modo no bloqueante.
-  • O_DIRECT   → modo paquete (cada write es un paquete independiente).
+PROTOTIPO pipe2() (GNU/Linux ≥ 2.6.27, glibc ≥ 2.9):
+  #include <unistd.h>
+  int pipe2(int filedes[2], int flags);
 
-Flujo típico de uso:
-1. El proceso llama a pipe() antes de fork().
-2. Tras fork(), cada proceso cierra el extremo que no usa.
-3. El escritor escribe con write(filedes[1], ...).
-4. El lector lee con read(filedes[0], ...).
+  Banderas disponibles mediante OR bit a bit:
+  • O_CLOEXEC   → establece FD_CLOEXEC en los dos descriptores.
+  • O_DIRECT    → E/S en modo "paquete" (independiente por cada write).
+  • O_NONBLOCK  → establece modo no bloqueante en los descriptores.
 
-Si el proceso escritor cierra su extremo, el lector recibe EOF al agotar los datos. Si el lector cierra su extremo, el escritor recibe SIGPIPE.`,
+Flujo de comunicación con fork():
+  1. El padre llama a pipe() → obtiene filedes[0] y filedes[1].
+  2. El padre llama a fork() → el hijo hereda ambos descriptores.
+  3. Para comunicación padre → hijo: padre cierra [0], hijo cierra [1].
+  4. Para comunicación hijo → padre: hijo cierra [0], padre cierra [1].
+
+Siempre cerrar el extremo no utilizado en cada proceso para que las operaciones de lectura detecten correctamente el EOF.`,
     code: `#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
-#define MAXLINE 128
+#define MAXLINEA 80
 
 int main(void) {
-    int    fd[2];
-    pid_t  hijo;
-    char   buf[MAXLINE];
-    int    n;
+    int  n, fd[2];
+    pid_t hijo;
+    char linea[MAXLINEA];
+    int estado;
 
-    /* 1. Crear la tubería ANTES de fork */
+    /* Crear la tubería ANTES de fork */
     if (pipe(fd) < 0) {
-        perror("pipe"); exit(1);
+        fprintf(stderr, "error de tubería\\n");
+        exit(1);
     }
 
-    printf("[MAIN] Tubería creada: fd[0]=%d (lectura) fd[1]=%d (escritura)\\n",
-           fd[0], fd[1]);
-
-    if ((hijo = fork()) < 0) {
-        perror("fork"); exit(1);
-    }
-
-    /* ---- HIJO: escribe en la tubería ---- */
-    if (hijo == 0) {
-        close(fd[0]);  // El hijo no necesita leer
-        const char *msg = "Hola desde el proceso hijo!\\n";
-        printf("[HIJO]  PID=%ld | Escribiendo en la tubería...\\n",
-               (long)getpid());
-        write(fd[1], msg, strlen(msg));
+    if ((hijo = fork()) == 0) {
+        /* ── HIJO: escribe en la tubería ── */
+        close(fd[0]);                          /* cerrar extremo de lectura */
+        write(fd[1], "hola mundo \\n", 12);
         close(fd[1]);
         exit(EXIT_SUCCESS);
+
+    } else {
+        /* ── PADRE: lee de la tubería ── */
+        close(fd[1]);                          /* cerrar extremo de escritura */
+        n = read(fd[0], linea, MAXLINEA);
+        write(STDOUT_FILENO, linea, n);
+        printf("Bytes recibidos: %d\\n", n);
+        wait(&estado);
     }
 
-    /* ---- PADRE: lee desde la tubería ---- */
-    close(fd[1]);  // El padre no necesita escribir
-    printf("[PADRE] PID=%ld | Leyendo desde la tubería...\\n",
-           (long)getpid());
-    n = read(fd[0], buf, MAXLINE - 1);
-    buf[n] = '\\0';
-    printf("[PADRE] Recibido (%d bytes): %s", n, buf);
-    close(fd[0]);
-
-    wait(NULL);  // Evitar zombi
     return EXIT_SUCCESS;
 }`,
     language: "c",
@@ -87,104 +172,110 @@ int main(void) {
     terminalLines: [
       "$ gcc pipe_demo.c -o pipe_demo",
       "$ ./pipe_demo",
-      "",
-      "[MAIN] Tubería creada: fd[0]=3 (lectura) fd[1]=4 (escritura)",
-      "[PADRE] PID=9000 | Leyendo desde la tubería...",
-      "[HIJO]  PID=9001 | Escribiendo en la tubería...",
-      "[PADRE] Recibido (28 bytes): Hola desde el proceso hijo!",
+      "hola mundo ",
+      "Bytes recibidos: 12",
     ],
     terminalTitle: "Terminal — bash · pipe_demo",
     conclusion:
-      "Cerrar el extremo no utilizado en cada proceso es fundamental: si el padre no cierra fd[1], el read() nunca detecta EOF aunque el hijo cierre su extremo, porque el kernel solo envía EOF cuando todos los descriptores de escritura están cerrados. El orden de ejecución entre padre e hijo depende del planificador, pero read() bloquea al padre hasta que haya datos disponibles.",
+      "La tubería sin nombre es la forma más sencilla de IPC entre procesos emparentados. La clave está en cerrar el extremo no utilizado en cada proceso: si el extremo de escritura no se cierra en el lector, la llamada a read() nunca retorna EOF. La herencia de descriptores tras fork() es el mecanismo que permite compartir la tubería entre padre e hijo.",
     improvements:
-      "Para comunicación bidireccional crearía dos tuberías (una para cada dirección). También implementaría un shell pipeline (ls | grep) conectando stdout de un proceso con stdin del siguiente usando dup2() para redirigir los descriptores estándar hacia los extremos de la tubería.",
+      "Implementar comunicación bidireccional usando dos tuberías (una para cada dirección). Explorar pipe2() con O_NONBLOCK para lecturas no bloqueantes. Conectar la salida de un proceso con la entrada de otro (patrón de la shell: cmd1 | cmd2) usando dup2() para redirigir stdout/stdin a los extremos de la tubería.",
   },
-  {
-    id: "ipc-practica-2",
-    number: 2,
-    title: "Tuberías con nombre — mkfifo()",
-    difficulty: "Básico" as const,
-    tags: ["fifo", "mkfifo", "IPC", "named pipe", "POSIX"],
-    objective:
-      "Crear tuberías con nombre (FIFO) usando mkfifo() para comunicar procesos no emparentados, comprendiendo que el archivo FIFO persiste en el sistema de archivos y que su apertura bloquea hasta que ambos extremos estén listos.",
-    theory: `Las tuberías con nombre (FIFOs) resuelven la limitación principal de los pipes: pueden comunicar procesos que no comparten un ancestro, porque el archivo FIFO vive en el sistema de archivos y cualquier proceso con los permisos adecuados puede abrirlo.
 
-El prototipo es:
+  // ─────────────────────────────────────────────────────────────────
+  // 3.1.2 Tuberías con nombre — FIFO
+  // ─────────────────────────────────────────────────────────────────
+  {
+    id: "tema-3-1-2",
+    number: 3,
+    title: "3.1.2 Tuberías con nombre — FIFO (mkfifo)",
+    difficulty: "Básico" as const,
+    tags: ["fifo", "mkfifo", "named pipe", "IPC", "sistema de archivos"],
+    objective:
+      "Crear y utilizar tuberías con nombre (FIFO) mediante mkfifo() para comunicar procesos que no comparten ancestro, comprendiendo la apertura bloqueante y el ciclo de vida del archivo especial.",
+    theory: `Las tuberías con nombre (FIFO) permiten comunicar procesos sin necesidad de compartir un ancestro común. A diferencia de pipe, un FIFO tiene un nombre y una ruta en el sistema de archivos.
+
+PROTOTIPO mkfifo():
   #include <sys/types.h>
   #include <sys/stat.h>
   int mkfifo(const char *pathname, mode_t mode);
-  • pathname → ruta donde se creará el archivo especial FIFO.
-  • mode     → permisos (p.ej. 0666, modificado por umask).
-  • Retorna 0 en éxito, -1 en error.
 
-Comportamiento importante:
-• Abrir un FIFO para lectura BLOQUEA hasta que otro proceso lo abra para escritura, y viceversa.
-• Una vez abierto en ambos extremos, la E/S funciona igual que un pipe.
-• El archivo persiste en el sistema de archivos hasta que se elimine con unlink().
-• umask() se usa para ajustar la máscara de permisos antes de crear el FIFO.
+  • pathname → nombre y ruta donde se creará el archivo especial FIFO.
+  • mode     → permisos del archivo (igual que en open/creat, se aplica umask).
+  • Retorna 0 en éxito, -1 en error (errno indica el tipo de error).
 
-Diferencias clave con pipe():
-  pipe  → sin nombre, solo procesos emparentados, descriptor de archivo.
-  FIFO  → con nombre/ruta, cualquier proceso, descriptor de archivo.`,
+Comportamiento de apertura:
+  • Un FIFO debe estar abierto en ambos extremos (lectura Y escritura) simultáneamente antes de realizar E/S.
+  • Abrir un FIFO para lectura BLOQUEA hasta que otro proceso lo abra para escritura, y viceversa.
+  • Una vez abierto, se opera igual que un archivo ordinario con read() y write().
+
+Diferencia con pipe:
+  • pipe: solo entre procesos emparentados, sin nombre en el sistema de archivos.
+  • FIFO: entre cualquier par de procesos, tiene nombre en el sistema de archivos.
+
+Gestión del archivo FIFO:
+  • Se crea con mkfifo() o con el comando: mkfifo nombre_fifo
+  • Se elimina con unlink() o rm.
+  • Persiste en el sistema de archivos hasta que se elimina explícitamente.
+
+Función umask():
+  • umask(~0666) establece la máscara de permisos para que el FIFO tenga permisos 0666.`,
     code: `#include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
+#include <fcntl.h>
 #include <unistd.h>
 
-#define FIFO_PATH "mi_tuberia"
-#define MSG_SIZE  64
+#define NOMBRE_FIFO "mi_tuberia"
 
 int main(void) {
     pid_t hijo;
-    int   fd;
-    char  mensaje[MSG_SIZE];
+    int   file;
+    char  mensaje[20];
 
-    /* Eliminar FIFO previo si existe */
-    unlink(FIFO_PATH);
+    /* Eliminar el FIFO si ya existía de una ejecución anterior */
+    unlink(NOMBRE_FIFO);
 
-    /* Ajustar máscara y crear el FIFO */
+    /* Ajustar máscara de permisos y crear el archivo FIFO */
     umask(~0666);
-    if (mkfifo(FIFO_PATH, 0666) == -1) {
-        perror("mkfifo"); exit(1);
-    }
-    printf("[MAIN] FIFO '%s' creado en el sistema de archivos.\\n", FIFO_PATH);
-
-    if ((hijo = fork()) < 0) {
-        perror("fork"); exit(1);
+    if (mkfifo(NOMBRE_FIFO, 0666) == -1) {
+        perror("error en mkfifo");
+        exit(-1);
     }
 
-    /* ---- HIJO: escribe en el FIFO ---- */
-    if (hijo == 0) {
-        printf("[HIJO]  PID=%ld | Abriendo FIFO para escritura...\\n",
-               (long)getpid());
-        fd = open(FIFO_PATH, O_WRONLY);  // Bloqueará hasta que padre abra O_RDONLY
-        if (fd == -1) { perror("open FIFO escritura"); exit(1); }
+    if ((hijo = fork()) == 0) {
+        /* ── HIJO: abre el FIFO para escritura y envía mensaje ── */
+        fprintf(stdout, "[HIJO] PID=%ld — abriendo FIFO para escritura...\\n",
+                (long)getpid());
 
-        snprintf(mensaje, MSG_SIZE, "Mensaje del HIJO PID=%ld", (long)getpid());
-        write(fd, mensaje, MSG_SIZE);
-        printf("[HIJO]  Escribió: '%s'\\n", mensaje);
-        close(fd);
-        exit(EXIT_SUCCESS);
+        if ((file = open(NOMBRE_FIFO, O_WRONLY)) == -1) {
+            perror("error en open O_WRONLY");
+            exit(-1);
+        }
+
+        write(file, "soy el hijo,ID...\\n", 20);
+        close(file);
+        fprintf(stdout, "[HIJO] Mensaje enviado. Terminando.\\n");
+        exit(0);
+
+    } else if (hijo > 0) {
+        /* ── PADRE: abre el FIFO para lectura y recibe mensaje ── */
+        fprintf(stdout, "[PADRE] PID=%ld — abriendo FIFO para lectura...\\n",
+                (long)getpid());
+
+        if ((file = open(NOMBRE_FIFO, O_RDONLY)) == -1) {
+            perror("error en open O_RDONLY");
+            exit(-1);
+        }
+
+        read(file, mensaje, 20);
+        fprintf(stdout, "[PADRE] Mensaje recibido: %s\\n", mensaje);
+        close(file);
+
+        /* Eliminar el FIFO del sistema de archivos */
+        unlink(NOMBRE_FIFO);
     }
-
-    /* ---- PADRE: lee del FIFO ---- */
-    printf("[PADRE] PID=%ld | Abriendo FIFO para lectura...\\n",
-           (long)getpid());
-    fd = open(FIFO_PATH, O_RDONLY);      // Bloqueará hasta que hijo abra O_WRONLY
-    if (fd == -1) { perror("open FIFO lectura"); exit(1); }
-
-    read(fd, mensaje, MSG_SIZE);
-    printf("[PADRE] Recibió: '%s'\\n", mensaje);
-    close(fd);
-
-    wait(NULL);
-
-    /* Limpiar el archivo FIFO del sistema de archivos */
-    unlink(FIFO_PATH);
-    printf("[MAIN] FIFO eliminado.\\n");
 
     return EXIT_SUCCESS;
 }`,
@@ -193,54 +284,290 @@ int main(void) {
     terminalLines: [
       "$ gcc fifo_demo.c -o fifo_demo",
       "$ ./fifo_demo",
+      "[PADRE] PID=10000 — abriendo FIFO para lectura...",
+      "[HIJO]  PID=10001 — abriendo FIFO para escritura...",
+      "[HIJO]  Mensaje enviado. Terminando.",
+      "[PADRE] Mensaje recibido: soy el hijo,ID...",
       "",
-      "[MAIN] FIFO 'mi_tuberia' creado en el sistema de archivos.",
-      "[PADRE] PID=10000 | Abriendo FIFO para lectura...",
-      "[HIJO]  PID=10001 | Abriendo FIFO para escritura...",
-      "[HIJO]  Escribió: 'Mensaje del HIJO PID=10001'",
-      "[PADRE] Recibió: 'Mensaje del HIJO PID=10001'",
-      "[MAIN] FIFO eliminado.",
-      "",
-      "$ ls mi_tuberia",
+      "# Verificar que el FIFO ya no existe",
+      "$ ls -la mi_tuberia",
       "ls: cannot access 'mi_tuberia': No such file or directory",
     ],
     terminalTitle: "Terminal — bash · fifo_demo",
     conclusion:
-      "El bloqueo mutuo en la apertura es una característica importante: open(O_RDONLY) bloquea hasta que alguien abra el otro extremo, lo que sincroniza implícitamente el inicio de la comunicación. Esto lo hace diferente de un archivo normal. Para comunicación entre procesos no emparentados en terminal separadas, uno ejecutaría el escritor y el otro el lector usando el mismo nombre de FIFO.",
+      "Las tuberías con nombre extienden la funcionalidad de pipe al permitir la comunicación entre procesos sin parentesco. El comportamiento bloqueante durante la apertura garantiza sincronización automática: ambos extremos están listos antes de que comience la transferencia de datos. Es importante eliminar el archivo FIFO con unlink() cuando ya no se necesite, para no dejar archivos especiales huérfanos en el sistema de archivos.",
     improvements:
-      "Implementaría el escenario real: dos programas independientes (escritor.c y lector.c) que se comunican abriendo el mismo FIFO desde terminales distintas. También probaría la comunicación sin fork() para demostrar que los FIFOs sirven para procesos completamente independientes.",
+      "Implementar comunicación entre procesos completamente independientes (sin fork) usando dos terminales y el mismo archivo FIFO. Usar mkfifo desde la línea de comandos y probar con echo y cat. Implementar un servidor que escuche en un FIFO y varios clientes que envíen mensajes.",
   },
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3.2 Mecanismos IPC derivados de System V
+  // ─────────────────────────────────────────────────────────────────
   {
-    id: "ipc-practica-3",
-    number: 3,
-    title: "Semáforos System V — semget(), semop(), semctl()",
-    difficulty: "Avanzado" as const,
-    tags: ["semáforos", "System V", "semget", "semop", "semctl", "ftok", "sincronización"],
+    id: "tema-3-2",
+    number: 4,
+    title: "3.2 Mecanismos IPC derivados de System V",
+    difficulty: "Intermedio" as const,
+    tags: ["System V", "IPC", "semáforos", "memoria compartida", "colas de mensajes"],
     objective:
-      "Implementar sincronización entre procesos usando semáforos de System V: crear la llave con ftok(), obtener el conjunto de semáforos con semget(), realizar operaciones atómicas con semop() y administrarlos con semctl().",
-    theory: `Los semáforos en System V son conjuntos de valores enteros no negativos mantenidos por el kernel. Cada operación sobre el conjunto es atómica, garantizando sincronización sin condiciones de carrera.
+      "Conocer los tres mecanismos IPC derivados de UNIX System V (semáforos, memoria compartida y colas de mensajes), sus características comunes y las estructuras de datos que el kernel mantiene para cada uno.",
+    theory: `El paquete IPC de UNIX System V y derivados (GNU/Linux) se compone de tres mecanismos:
+  1. Semáforos       → permiten sincronizar procesos.
+  2. Memoria compartida → permite que los procesos compartan su espacio de direcciones virtuales.
+  3. Colas de mensajes → posibilitan el intercambio de datos con un formato determinado.
 
-Flujo de uso:
-1. Generar una llave: key_t llave = ftok(pathname, proj_id);
-   ftok combina los 8 bits menos significativos de proj_id + número de i-nodo + número de dispositivo → llave única de 32 bits.
+Características comunes de todos los mecanismos IPC de System V:
+  • Una tabla con entradas que describen el uso del mecanismo.
+  • Una llave numérica (key_t) elegida por el usuario para cada entrada.
+  • Cada mecanismo dispone de una llamada "get" para crear una entrada nueva o recuperar una existente.
+  • Cada entrada tiene un registro de permisos: ID de usuario y grupo del creador.
+  • Cada entrada contiene información de estado: ID del último proceso que la utilizó.
+  • Una llamada de "control" permite leer/modificar el estado o liberar la entrada.
 
-2. Crear/obtener el conjunto: semid = semget(llave, nsems, semflg);
-   • nsems   → número de semáforos en el conjunto.
-   • semflg  → IPC_CREAT|0600 (crear con permisos de propietario).
+Tabla de llamadas IPC de System V:
+  ┌─────────────────────────┬──────────────┬───────────────┬───────────────┐
+  │ Operación               │ Semáforos    │ Mem. Comp.    │ Cola mensajes │
+  ├─────────────────────────┼──────────────┼───────────────┼───────────────┤
+  │ Biblioteca específica   │ <sys/sem.h>  │ <sys/shm.h>   │ <sys/msg.h>   │
+  │ Crear / abrir           │ semget()     │ shmget()      │ msgget()      │
+  │ Operaciones de control  │ semctl()     │ shmctl()      │ msgctl()      │
+  │ Operaciones de uso      │ semop()      │ shmat(),shmdt │ msgsnd(),msgrcv│
+  └─────────────────────────┴──────────────┴───────────────┴───────────────┘
+  Bibliotecas comunes: <sys/types.h>, <sys/ipc.h>
 
-3. Inicializar valores: semctl(semid, num, SETVAL, valor);
+Permiso de acceso (modo):
+  Se especifica con un número octal: 00X00 = usuario, 000X0 = grupo, 0000X = otros.
+  Combinado con IPC_CREAT e IPC_EXCL en el parámetro "flag" de cada llamada "get".`,
+    code: `/* Ejemplo de consulta y estructura interna de objetos IPC System V */
 
-4. Operar sobre el semáforo: semop(semid, &operacion, 1);
-   La estructura sembuf tiene:
-   • sem_num → índice del semáforo en el conjunto.
-   • sem_op  → negativo = decrementar (bloquear), positivo = incrementar (despertar), 0 = esperar a cero.
-   • sem_flg → 0 (bloqueante) o IPC_NOWAIT.
+/* Para ver los objetos IPC activos en el sistema: */
+// ipcs
 
-5. Eliminar el conjunto: semctl(semid, 0, IPC_RMID, 0);
+/* Para ver solo semáforos: */
+// ipcs -s
 
-Comandos del sistema:
-  ipcs -s         → lista conjuntos de semáforos activos.
-  ipcrm -s semid  → elimina un conjunto de semáforos.`,
+/* Para ver solo memoria compartida: */
+// ipcs -m
+
+/* Para ver solo colas de mensajes: */
+// ipcs -q
+
+/* Para eliminar un objeto IPC (por ejemplo un semáforo con semid=1): */
+// ipcrm -s 1
+
+/* Ejemplo de salida de ipcs: */
+/*
+------ Colas de mensajes ----
+key        msqid    propietario perms   bytes utilizados mensajes
+
+---- Segmentos memoria compartida ---
+key        shmid    propietario perms   bytes   nattch  estado
+0x00000000 884743   gcgero      600     1048576 2       dest
+0x00000000 819208   gcgero      600     524288  2       dest
+
+------ Matrices semáforo ------
+key        semid    propietario perms   nsems
+0x6100050e 1        gcgero      600     2
+0x61000c49 2        gcgero      600     2
+*/
+
+/* Archivos del directorio /proc/sysvipc: */
+// ls /proc/sysvipc        → msg  sem  shm
+// cat /proc/sysvipc/sem   → información de semáforos activos
+// cat /proc/sysvipc/shm   → información de memoria compartida
+// cat /proc/sysvipc/msg   → información de colas de mensajes
+
+/* Límites del sistema (en /proc/sys/kernel/): */
+// cat /proc/sys/kernel/sem     → límites de semáforos
+// cat /proc/sys/kernel/shmmax  → tamaño máximo de segmento de memoria compartida
+// cat /proc/sys/kernel/msgmax  → tamaño máximo de mensaje`,
+    language: "c",
+    filename: "ipc_systemv_intro.c",
+    terminalLines: [
+      "$ ipcs",
+      "------ Colas de mensajes ----",
+      "key        msqid    propietario perms   bytes mensajes",
+      "",
+      "---- Segmentos memoria compartida ---",
+      "key        shmid    propietario perms   bytes   nattch estado",
+      "0x00000000 884743   gcgero      600     1048576 2      dest",
+      "",
+      "------ Matrices semáforo ------",
+      "key        semid    propietario perms   nsems",
+      "0x6100050e 1        gcgero      600     2",
+      "",
+      "$ ls /proc/sysvipc",
+      "msg  sem  shm",
+      "",
+      "$ cat /proc/sys/kernel/shmmax",
+      "18446744073692774399",
+    ],
+    terminalTitle: "Terminal — bash · ipc_systemv",
+    conclusion:
+      "Los mecanismos IPC de System V comparten una arquitectura común basada en llaves numéricas y tablas internas del kernel. Esta uniformidad facilita el aprendizaje de los tres mecanismos, ya que el patrón es siempre el mismo: generar llave con ftok(), crear/obtener el objeto con la función 'get', usarlo con las funciones de operación y eliminarlo con la función 'control' usando IPC_RMID.",
+    improvements:
+      "Usar ipcs y ipcrm para gestionar objetos IPC desde la línea de comandos. Explorar /proc/sysvipc para leer el estado interno de los objetos IPC. Comparar los mecanismos IPC de System V con sus equivalentes POSIX (sem_open, shm_open, mq_open).",
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3.2.1 Llaves
+  // ─────────────────────────────────────────────────────────────────
+  {
+    id: "tema-3-2-1",
+    number: 5,
+    title: "3.2.1 Llaves — ftok()",
+    difficulty: "Básico" as const,
+    tags: ["ftok", "key_t", "IPC_PRIVATE", "llave", "semget", "shmget", "msgget"],
+    objective:
+      "Comprender el rol de las llaves (key_t) en los mecanismos IPC de System V y usar la función ftok() para generar llaves únicas de forma reproducible a partir de un archivo y un identificador de proyecto.",
+    theory: `Todas las formas de IPC de System V (excepto las tuberías sin nombre) tienen asociado un espacio de nombres para llevar a cabo el intercambio de mensajes.
+
+Una llave es una variable del tipo key_t (entero de 32 bits) que se usa para acceder a los mecanismos IPC previamente reservados o nuevos. Los mecanismos que forman parte de un mismo proyecto comparten la misma llave.
+
+PROTOTIPO ftok():
+  #include <sys/types.h>
+  #include <sys/ipc.h>
+  key_t ftok(const char *pathname, int proj_id);
+
+  • pathname → ruta de un archivo ordinario existente y accesible.
+  • proj_id  → identificador del proyecto (8 bits menos significativos se usan).
+  • Retorna la llave generada, o -1 en caso de error.
+
+Implementación interna de ftok():
+  La llave se construye combinando:
+    • Los 8 bits menos significativos de proj_id.
+    • El número de i-nodo del archivo pathname.
+    • El número menor del dispositivo del sistema de archivos donde reside el archivo.
+  El resultado es una llave única de 32 bits.
+
+Uso de la llave generada:
+  key_t llave = ftok("/ruta/archivo", 'a');
+  int semid = semget(llave, nsems, IPC_CREAT | 0600);
+  int shmid = shmget(llave, size, IPC_CREAT | 0600);
+  int msgid = msgget(llave, IPC_CREAT | 0600);
+
+Valor especial IPC_PRIVATE:
+  Si se usa IPC_PRIVATE como llave, siempre se crea un nuevo objeto IPC privado (no compartible por nombre con otros procesos).`,
+    code: `#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+
+int main(int argc, char *argv[]) {
+    key_t llave;
+    int   semid;
+
+    /* Generar llave usando el ejecutable actual como pathname */
+    llave = ftok(argv[0], 'a');
+    if (llave == -1) {
+        perror("ftok");
+        exit(-1);
+    }
+
+    printf("Llave generada: 0x%x (%d)\\n", (unsigned)llave, llave);
+    printf("Archivo usado : %s\\n", argv[0]);
+    printf("proj_id usado : 'a' = %d\\n", (int)'a');
+
+    /* Usar la llave para crear un semáforo */
+    semid = semget(llave, 1, IPC_CREAT | IPC_EXCL | 0600);
+    if (semid == -1) {
+        perror("semget (puede que ya exista; usa ipcrm para eliminarlo)");
+        /* Intentar acceder al semáforo existente */
+        semid = semget(llave, 1, 0);
+        if (semid == -1) { perror("semget"); exit(-1); }
+    }
+
+    printf("\\nSemáforo creado/accedido con semid=%d\\n", semid);
+    printf("Verifícalo con: ipcs -s\\n");
+
+    /* Eliminar el semáforo al finalizar */
+    semctl(semid, 0, IPC_RMID, 0);
+    printf("Semáforo eliminado con IPC_RMID.\\n");
+
+    return EXIT_SUCCESS;
+}`,
+    language: "c",
+    filename: "ftok_demo.c",
+    terminalLines: [
+      "$ gcc ftok_demo.c -o ftok_demo",
+      "$ ./ftok_demo",
+      "Llave generada: 0x6100050e (1627391246)",
+      "Archivo usado : ./ftok_demo",
+      "proj_id usado : 'a' = 97",
+      "",
+      "Semáforo creado/accedido con semid=1",
+      "Verifícalo con: ipcs -s",
+      "",
+      "$ ipcs -s",
+      "------ Matrices semáforo ------",
+      "key        semid    propietario perms   nsems",
+      "0x6100050e 1        gcgero      600     1",
+      "",
+      "Semáforo eliminado con IPC_RMID.",
+    ],
+    terminalTitle: "Terminal — bash · ftok_demo",
+    conclusion:
+      "ftok() es la función estándar para generar llaves reproducibles: el mismo pathname y proj_id siempre producen la misma llave en el mismo sistema de archivos, lo que permite que procesos independientes accedan al mismo objeto IPC sin comunicación previa. Es importante que el archivo pathname exista y sea accesible, y que todos los procesos participantes usen los mismos parámetros.",
+    improvements:
+      "Experimentar con distintos valores de proj_id para el mismo archivo y observar cómo cambia la llave. Probar qué ocurre si el archivo es eliminado y re-creado (el i-nodo cambia, por lo que ftok() genera una llave diferente). Comparar con IPC_PRIVATE para entender cuándo usar cada opción.",
+  },
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3.2.2 Semáforos en derivados de System V
+  // ─────────────────────────────────────────────────────────────────
+  {
+    id: "tema-3-2-2",
+    number: 6,
+    title: "3.2.2 Semáforos en derivados de System V",
+    difficulty: "Avanzado" as const,
+    tags: ["semget", "semop", "semctl", "semáforos", "System V", "sincronización", "IPC"],
+    objective:
+      "Implementar sincronización de procesos mediante semáforos de System V usando semget(), semop() y semctl(), comprendiendo las operaciones atómicas de incremento, decremento y espera de nulidad.",
+    theory: `Los semáforos son mecanismos de sincronización de acceso a recursos compartidos. En System V, la implementación garantiza que las operaciones sean atómicas mediante su implementación en el kernel.
+
+Características de los semáforos System V:
+  • Un semáforo no es un valor simple, sino un CONJUNTO de valores enteros no negativos.
+  • Cada valor del conjunto puede asumir cualquier valor no negativo (no solo 0 o 1).
+
+semget() — crear o acceder a un conjunto de semáforos:
+  PROTOTIPO:
+    #include <sys/types.h>
+    #include <sys/ipc.h>
+    #include <sys/sem.h>
+    int semget(key_t key, int nsems, int semflg);
+
+  • key    → llave (resultado de ftok() o IPC_PRIVATE).
+  • nsems  → número de semáforos en el conjunto.
+  • semflg → IPC_CREAT | IPC_EXCL | modo_octal.
+  • Retorna el identificador del conjunto, o -1 en error.
+
+semop() — operaciones atómicas sobre semáforos:
+  PROTOTIPO:
+    int semop(int semid, struct sembuf *sops, size_t nsops);
+
+  struct sembuf {
+    unsigned short sem_num; /* número de semáforo en el conjunto (0..n-1) */
+    short          sem_op;  /* operación: negativo=decremento, positivo=incremento, 0=espera nulidad */
+    short          sem_flg; /* IPC_NOWAIT, SEM_UNDO */
+  };
+
+  sem_op < 0 → decrementa (bloquea si semval < |sem_op|).
+  sem_op > 0 → incrementa (despierta procesos en espera).
+  sem_op = 0 → espera hasta que semval sea 0.
+
+semctl() — administrar semáforos:
+  PROTOTIPO:
+    int semctl(int semid, int semnum, int cmd, union semun arg);
+
+  Comandos principales (cmd):
+  • IPC_STAT → obtener información del conjunto.
+  • IPC_SET  → modificar permisos/propietario.
+  • IPC_RMID → eliminar el conjunto de semáforos.
+  • SETVAL   → inicializar un semáforo a un valor.
+  • GETVAL   → leer el valor de un semáforo.
+  • SETALL   → inicializar todos los semáforos del conjunto.
+  • GETALL   → leer todos los valores del conjunto.`,
     code: `#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -251,135 +578,141 @@ Comandos del sistema:
 
 #define SEM_HIJO  0
 #define SEM_PADRE 1
-#define ITERACIONES 5
-
-/* Función auxiliar para realizar una operación sobre el semáforo */
-void sem_op(int semid, int sem_num, int operacion) {
-    struct sembuf op;
-    op.sem_num = sem_num;
-    op.sem_op  = operacion;
-    op.sem_flg = 0;
-    if (semop(semid, &op, 1) == -1) {
-        perror("semop"); exit(1);
-    }
-}
 
 int main(int argc, char *argv[]) {
-    int    semid;
-    pid_t  pid;
-    key_t  llave;
+    int            semid;
+    pid_t          pid;
+    struct sembuf  operacion;
+    key_t          llave;
+    int            i = 5;  /* iteraciones de demostración */
 
-    /* Generar llave a partir del ejecutable */
+    /* Generar llave y crear conjunto de 2 semáforos */
     llave = ftok(argv[0], 'a');
-    if (llave == -1) { perror("ftok"); exit(1); }
+    if ((semid = semget(llave, 2, IPC_CREAT | 0600)) == -1) {
+        perror("semget"); exit(-1);
+    }
 
-    /* Crear conjunto de 2 semáforos */
-    semid = semget(llave, 2, IPC_CREAT | 0600);
-    if (semid == -1) { perror("semget"); exit(1); }
-
-    printf("=== Sincronización con semáforos System V ===\\n");
-    printf("semid=%d | llave=0x%x\\n\\n", semid, llave);
-
-    /* Inicializar: hijo bloqueado (0), padre desbloqueado (1) */
+    /* Inicializar semáforos:
+       SEM_HIJO  = 0 (bloqueado  → el hijo espera)
+       SEM_PADRE = 1 (desbloqueado → el padre puede continuar) */
     semctl(semid, SEM_HIJO,  SETVAL, 0);
     semctl(semid, SEM_PADRE, SETVAL, 1);
 
-    if ((pid = fork()) < 0) {
-        perror("fork"); exit(1);
-    }
+    if ((pid = fork()) == -1) { perror("fork"); exit(-1); }
 
     if (pid == 0) {
-        /* ---- PROCESO HIJO ---- */
-        for (int i = 1; i <= ITERACIONES; i++) {
-            sem_op(semid, SEM_HIJO, -1);    // Esperar turno del hijo
-            printf("[HIJO]  iteración %d | PID=%ld\\n", i, (long)getpid());
-            sem_op(semid, SEM_PADRE, +1);   // Ceder turno al padre
+        /* ── Proceso HIJO ── */
+        while (i--) {
+            /* Decrementar (cerrar) semáforo del hijo → espera su turno */
+            operacion.sem_num = SEM_HIJO;
+            operacion.sem_op  = -1;
+            operacion.sem_flg = 0;
+            semop(semid, &operacion, 1);
+
+            printf("[HIJO]  turno %d\\n", 5 - i);
+
+            /* Incrementar (abrir) semáforo del padre → cede el turno */
+            operacion.sem_num = SEM_PADRE;
+            operacion.sem_op  = 1;
+            semop(semid, &operacion, 1);
         }
-        semctl(semid, 0, IPC_RMID, 0);     // Eliminar semáforos
+        semctl(semid, 0, IPC_RMID, 0);
         exit(EXIT_SUCCESS);
 
     } else {
-        /* ---- PROCESO PADRE ---- */
-        for (int i = 1; i <= ITERACIONES; i++) {
-            sem_op(semid, SEM_PADRE, -1);   // Esperar turno del padre
-            printf("[PADRE] iteración %d | PID=%ld\\n", i, (long)getpid());
-            sem_op(semid, SEM_HIJO, +1);    // Ceder turno al hijo
+        /* ── Proceso PADRE ── */
+        while (i--) {
+            /* Decrementar (cerrar) semáforo del padre → espera su turno */
+            operacion.sem_num = SEM_PADRE;
+            operacion.sem_op  = -1;
+            operacion.sem_flg = 0;
+            semop(semid, &operacion, 1);
+
+            printf("[PADRE] turno %d\\n", 5 - i);
+
+            /* Incrementar (abrir) semáforo del hijo → cede el turno */
+            operacion.sem_num = SEM_HIJO;
+            operacion.sem_op  = 1;
+            semop(semid, &operacion, 1);
         }
+        semctl(semid, 0, IPC_RMID, 0);
     }
 
     return EXIT_SUCCESS;
 }`,
     language: "c",
-    filename: "semaforos_sysv.c",
+    filename: "semaforos_sv.c",
     terminalLines: [
-      "$ gcc semaforos_sysv.c -o semaforos_sysv",
-      "$ ./semaforos_sysv",
-      "",
-      "=== Sincronización con semáforos System V ===",
-      "semid=1 | llave=0x6100050e",
-      "",
-      "[PADRE] iteración 1 | PID=11000",
-      "[HIJO]  iteración 1 | PID=11001",
-      "[PADRE] iteración 2 | PID=11000",
-      "[HIJO]  iteración 2 | PID=11001",
-      "[PADRE] iteración 3 | PID=11000",
-      "[HIJO]  iteración 3 | PID=11001",
-      "[PADRE] iteración 4 | PID=11000",
-      "[HIJO]  iteración 4 | PID=11001",
-      "[PADRE] iteración 5 | PID=11000",
-      "[HIJO]  iteración 5 | PID=11001",
-      "",
-      "$ ipcs -s",
-      "------ Matrices semáforo ------",
-      "key        semid  propietario  perms  nsems",
-      "(vacío: semáforos ya eliminados con IPC_RMID)",
+      "$ gcc semaforos_sv.c -o semaforos_sv",
+      "$ ./semaforos_sv",
+      "[PADRE] turno 1",
+      "[HIJO]  turno 1",
+      "[PADRE] turno 2",
+      "[HIJO]  turno 2",
+      "[PADRE] turno 3",
+      "[HIJO]  turno 3",
+      "[PADRE] turno 4",
+      "[HIJO]  turno 4",
+      "[PADRE] turno 5",
+      "[HIJO]  turno 5",
     ],
-    terminalTitle: "Terminal — bash · semaforos_sysv",
+    terminalTitle: "Terminal — bash · semaforos_sv",
     conclusion:
-      "El uso de dos semáforos (uno por proceso) garantiza alternancia estricta: el padre siempre va primero porque SEM_PADRE se inicializa en 1 y SEM_HIJO en 0. La atomicidad de semop() es el punto clave: el kernel garantiza que el decremento de un semáforo en cero sea indivisible, eliminando las condiciones de carrera. Es crucial eliminar los semáforos con IPC_RMID al final; de lo contrario, persisten en el kernel incluso después de que el proceso termine.",
+      "Los semáforos de System V son más complejos que los semáforos POSIX porque operan sobre conjuntos (arrays) de semáforos y requieren el uso de la estructura sembuf. La atomicidad de semop() garantiza que ningún otro proceso pueda modificar el semáforo entre el test y la operación, eliminando las condiciones de carrera. La inicialización correcta con semctl(SETVAL) es esencial antes de usar el semáforo.",
     improvements:
-      "Probaría los semáforos POSIX (sem_init, sem_wait, sem_post) que no requieren llave y son más simples para uso entre hilos. También implementaría un semáforo como mutex (valor inicial = 1) para proteger una sección crítica, y compararía el rendimiento entre semáforos System V y POSIX.",
+      "Experimentar con SEM_UNDO para que el kernel revierta automáticamente las operaciones si el proceso termina inesperadamente. Usar semctl(IPC_STAT) para inspeccionar el estado del conjunto. Implementar un mutex usando un semáforo con valor inicial 1 para proteger una sección crítica.",
   },
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3.3 Memoria compartida
+  // ─────────────────────────────────────────────────────────────────
   {
-    id: "ipc-practica-4",
-    number: 4,
-    title: "Memoria compartida — shmget(), shmat(), shmdt()",
+    id: "tema-3-3",
+    number: 7,
+    title: "3.3 Memoria compartida — shmget, shmat, shmdt, shmctl",
     difficulty: "Avanzado" as const,
-    tags: ["memoria compartida", "shmget", "shmat", "shmdt", "shmctl", "System V", "IPC"],
+    tags: ["shmget", "shmat", "shmdt", "shmctl", "memoria compartida", "IPC", "System V"],
     objective:
-      "Implementar comunicación entre procesos mediante un segmento de memoria compartida de System V, comprendiendo el ciclo de vida completo: crear, adjuntar, usar, desadjuntar y eliminar el segmento.",
-    theory: `La memoria compartida es el mecanismo IPC más rápido porque los procesos acceden directamente a la misma región de memoria sin necesidad de copias. Sin embargo, requiere sincronización externa (semáforos o mutex) para evitar condiciones de carrera.
+      "Implementar comunicación entre procesos mediante memoria compartida de System V usando shmget(), shmat(), shmdt() y shmctl(), comprendiendo el ciclo completo de creación, adjunción, uso y eliminación.",
+    theory: `La forma más rápida para comunicar dos procesos es hacer que compartan una zona de memoria. El segmento de memoria compartida existe en el espacio de direcciones del kernel y cada proceso que se une recibe un puntero a su copia local de la dirección virtual.
 
-Funciones del ciclo de vida:
+shmget() — crear o acceder a un segmento de memoria compartida:
+  PROTOTIPO:
+    #include <sys/ipc.h>
+    #include <sys/shm.h>
+    int shmget(key_t key, size_t size, int shmflg);
 
-1. Crear/obtener el segmento:
-   int shmget(key_t key, size_t size, int shmflg);
-   • size    → tamaño en bytes del segmento.
-   • shmflg → IPC_CREAT | permisos (p.ej. 0600).
-   • Retorna shmid (identificador del segmento).
+  • key    → llave (ftok() o IPC_PRIVATE).
+  • size   → tamaño en bytes del segmento.
+  • shmflg → IPC_CREAT | IPC_EXCL | modo_octal.
+  • Retorna el identificador del segmento (shmid), o -1 en error.
 
-2. Adjuntar al espacio de direcciones del proceso:
-   void *shmat(int shmid, const void *shmaddr, int shmflg);
-   • shmaddr = NULL → el kernel elige la dirección.
-   • Retorna puntero a la región compartida.
+shmat() / shmdt() — unirse y separarse del segmento:
+  PROTOTIPO:
+    char *shmat(int shmid, char *shmaddr, int shmflg);
+    int   shmdt(char *shmaddr);
 
-3. Operar sobre los datos directamente a través del puntero.
+  • shmat() retorna la dirección inicial del segmento en el espacio del proceso.
+  • Si shmaddr = 0, el kernel elige la dirección automáticamente (recomendado).
+  • shmdt() desconecta el segmento del espacio de direcciones del proceso (no lo elimina).
 
-4. Desadjuntar (el segmento no se elimina):
-   int shmdt(const void *shmaddr);
+shmctl() — administrar el segmento:
+  PROTOTIPO:
+    int shmctl(int shmid, int cmd, struct shmid_ds *buf);
 
-5. Eliminar el segmento del kernel:
-   shmctl(shmid, IPC_RMID, NULL);
+  Comandos principales (cmd):
+  • IPC_STAT → leer información del segmento en buf.
+  • IPC_SET  → modificar permisos/propietario.
+  • IPC_RMID → marcar el segmento para eliminación (se elimina cuando nattch = 0).
+  • SHM_LOCK → bloquear el segmento en memoria física.
+  • SHM_UNLOCK → desbloquear.
 
-Otros comandos de shmctl:
-  IPC_STAT  → lee la estructura de control shmid_ds.
-  IPC_SET   → modifica permisos y propietario.
-  SHM_LOCK  → fija el segmento en memoria RAM.
-  SHM_UNLOCK → lo libera para swap.
-
-Comandos del sistema:
-  ipcs -m          → lista segmentos de memoria compartida.
-  cat /proc/sysvipc/shm → estado detallado en el kernel.`,
+Ciclo de vida completo:
+  1. shmget()  → crear el segmento y obtener shmid.
+  2. shmat()   → adjuntar el segmento al espacio de direcciones.
+  3. [uso]     → leer/escribir como si fuera memoria normal.
+  4. shmdt()   → separar el segmento del espacio de direcciones.
+  5. shmctl(IPC_RMID) → eliminar el segmento del sistema.`,
     code: `#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -389,66 +722,57 @@ Comandos del sistema:
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define SHM_SIZE 4096
-#define MSG_MAX  256
-
-/* Estructura que vivirá en la memoria compartida */
-typedef struct {
-    int   contador;
-    char  mensaje[MSG_MAX];
-    int   listo;        // bandera de sincronización simple
-} DatosCompartidos;
+#define TAM_SEG 1024   /* tamaño del segmento en bytes */
 
 int main(void) {
-    int             shmid;
-    DatosCompartidos *datos;
-    pid_t           hijo;
+    int   shmid;
+    char *segmento;
+    pid_t hijo;
+    int   estado;
 
     /* 1. Crear el segmento de memoria compartida */
-    shmid = shmget(IPC_PRIVATE, SHM_SIZE, IPC_CREAT | 0600);
-    if (shmid == -1) { perror("shmget"); exit(1); }
-    printf("=== Memoria Compartida System V ===\\n");
-    printf("[MAIN] Segmento creado: shmid=%d | tamaño=%d bytes\\n\\n",
-           shmid, SHM_SIZE);
-
-    /* 2. Adjuntar al espacio de direcciones */
-    datos = (DatosCompartidos *)shmat(shmid, NULL, 0);
-    if (datos == (void *)-1) { perror("shmat"); exit(1); }
-
-    /* Inicializar la región compartida */
-    datos->contador = 0;
-    datos->listo    = 0;
-    memset(datos->mensaje, 0, MSG_MAX);
-
-    if ((hijo = fork()) < 0) { perror("fork"); exit(1); }
-
-    /* ---- HIJO: escribe en la memoria compartida ---- */
-    if (hijo == 0) {
-        printf("[HIJO]  PID=%ld | Escribiendo en memoria compartida...\\n",
-               (long)getpid());
-        datos->contador = 42;
-        snprintf(datos->mensaje, MSG_MAX,
-                 "Hola desde el hijo PID=%ld!", (long)getpid());
-        datos->listo = 1;   // Señal simple (en producción: usar semáforo)
-        printf("[HIJO]  contador=%d | mensaje='%s'\\n",
-               datos->contador, datos->mensaje);
-        shmdt(datos);
-        exit(EXIT_SUCCESS);
+    if ((shmid = shmget(IPC_PRIVATE, TAM_SEG, IPC_CREAT | 0600)) == -1) {
+        perror("shmget");
+        exit(EXIT_FAILURE);
     }
+    printf("[PADRE] Segmento creado: shmid=%d, tamaño=%d bytes\\n",
+           shmid, TAM_SEG);
 
-    /* ---- PADRE: espera y lee de la memoria compartida ---- */
-    while (!datos->listo) usleep(1000);  // Espera activa (simplificada)
-    printf("[PADRE] PID=%ld | Leyendo desde memoria compartida...\\n",
-           (long)getpid());
-    printf("[PADRE] contador=%d | mensaje='%s'\\n",
-           datos->contador, datos->mensaje);
+    /* 2. Adjuntar el segmento al espacio de direcciones del padre */
+    segmento = (char *)shmat(shmid, 0, 0);
+    if (segmento == (char *)-1) { perror("shmat"); exit(EXIT_FAILURE); }
 
-    wait(NULL);
+    /* Inicializar el segmento */
+    memset(segmento, 0, TAM_SEG);
+    sprintf(segmento, "Mensaje del PADRE (PID=%ld)", (long)getpid());
 
-    /* 4. Desadjuntar y 5. Eliminar el segmento */
-    shmdt(datos);
-    shmctl(shmid, IPC_RMID, NULL);
-    printf("\\n[MAIN] Segmento shmid=%d eliminado.\\n", shmid);
+    if ((hijo = fork()) == 0) {
+        /* ── Proceso HIJO ── */
+        /* El hijo hereda el descriptor shmid, se adjunta al mismo segmento */
+        char *seg_hijo = (char *)shmat(shmid, 0, 0);
+        if (seg_hijo == (char *)-1) { perror("shmat hijo"); exit(1); }
+
+        printf("[HIJO]  Lee del padre: \"%s\"\\n", seg_hijo);
+
+        /* El hijo escribe su propio mensaje */
+        sprintf(seg_hijo, "Respuesta del HIJO (PID=%ld)", (long)getpid());
+
+        shmdt(seg_hijo);  /* separarse del segmento */
+        exit(EXIT_SUCCESS);
+
+    } else {
+        wait(&estado);   /* esperar al hijo */
+
+        /* El padre lee el mensaje que dejó el hijo */
+        printf("[PADRE] Lee del hijo: \"%s\"\\n", segmento);
+
+        /* 4. Separarse del segmento */
+        shmdt(segmento);
+
+        /* 5. Eliminar el segmento del sistema */
+        shmctl(shmid, IPC_RMID, 0);
+        printf("[PADRE] Segmento eliminado del sistema.\\n");
+    }
 
     return EXIT_SUCCESS;
 }`,
@@ -457,305 +781,305 @@ int main(void) {
     terminalLines: [
       "$ gcc shm_demo.c -o shm_demo",
       "$ ./shm_demo",
-      "",
-      "=== Memoria Compartida System V ===",
-      "[MAIN] Segmento creado: shmid=884743 | tamaño=4096 bytes",
-      "",
-      "[HIJO]  PID=12001 | Escribiendo en memoria compartida...",
-      "[HIJO]  contador=42 | mensaje='Hola desde el hijo PID=12001!'",
-      "[PADRE] PID=12000 | Leyendo desde memoria compartida...",
-      "[PADRE] contador=42 | mensaje='Hola desde el hijo PID=12001!'",
-      "",
-      "[MAIN] Segmento shmid=884743 eliminado.",
+      "[PADRE] Segmento creado: shmid=884743, tamaño=1024 bytes",
+      "[HIJO]  Lee del padre: \"Mensaje del PADRE (PID=11000)\"",
+      "[PADRE] Lee del hijo:  \"Respuesta del HIJO (PID=11001)\"",
+      "[PADRE] Segmento eliminado del sistema.",
       "",
       "$ ipcs -m",
-      "------ Segmentos memoria compartida ------",
-      "clave      shmid  propietario  perms  bytes   nattch  estado",
-      "(vacío: segmento eliminado con IPC_RMID)",
+      "---- Segmentos memoria compartida ---",
+      "key        shmid    propietario perms   bytes   nattch estado",
+      "# (vacío: el segmento fue eliminado correctamente)",
     ],
     terminalTitle: "Terminal — bash · shm_demo",
     conclusion:
-      "La espera activa (while(!datos->listo)) es solo una simplificación didáctica; en aplicaciones reales se deben usar semáforos para sincronizar el acceso a la memoria compartida. shmat() retorna un puntero ordinario en C, lo que permite acceder a la región compartida con la misma sintaxis que cualquier estructura. Es fundamental eliminar el segmento con IPC_RMID; de lo contrario, persiste en el kernel incluso después de que todos los procesos terminen.",
+      "La memoria compartida es el mecanismo IPC más rápido porque evita la copia de datos: ambos procesos acceden directamente al mismo segmento físico de memoria. Sin embargo, al no proporcionar sincronización automática, se debe combinar con semáforos o mutexes para proteger el acceso concurrente. El uso de IPC_PRIVATE con shmget() es conveniente cuando el segmento solo será compartido entre procesos emparentados (vía fork).",
     improvements:
-      "Combinaría la memoria compartida con semáforos System V (o POSIX) para sincronización correcta sin espera activa. Implementaría un buffer circular en la región compartida para el problema Productor-Consumidor. También exploraría mmap() con MAP_SHARED como alternativa POSIX más moderna a shmget/shmat.",
+      "Combinar memoria compartida con semáforos de System V para implementar un buffer circular protegido. Usar shmctl(IPC_STAT) para inspeccionar el número de procesos adjuntados (nattch). Comparar con la alternativa POSIX: shm_open() + mmap() para memoria compartida con nombre.",
   },
-  {
-    id: "ipc-practica-5",
-    number: 5,
-    title: "Cola de mensajes — msgget(), msgsnd(), msgrcv()",
-    difficulty: "Avanzado" as const,
-    tags: ["cola de mensajes", "msgget", "msgsnd", "msgrcv", "msgctl", "System V", "IPC"],
-    objective:
-      "Implementar comunicación asíncrona entre procesos usando colas de mensajes de System V: crear la cola con msgget(), enviar mensajes tipados con msgsnd() y recibirlos selectivamente con msgrcv().",
-    theory: `Las colas de mensajes permiten que procesos intercambien datos estructurados (mensajes) de forma asíncrona y con filtrado por tipo. A diferencia de los pipes, los mensajes quedan en la cola del kernel hasta que son consumidos.
 
-Estructura básica de un mensaje:
+  // ─────────────────────────────────────────────────────────────────
+  // 3.4 Cola de mensajes
+  // ─────────────────────────────────────────────────────────────────
+  {
+    id: "tema-3-4",
+    number: 8,
+    title: "3.4 Cola de mensajes — msgget, msgsnd, msgrcv, msgctl",
+    difficulty: "Avanzado" as const,
+    tags: ["msgget", "msgsnd", "msgrcv", "msgctl", "cola de mensajes", "System V", "IPC"],
+    objective:
+      "Implementar comunicación entre procesos mediante colas de mensajes de System V, comprendiendo el ciclo de envío y recepción con msgsnd()/msgrcv() y la selección de mensajes por tipo.",
+    theory: `Las colas de mensajes permiten el intercambio de datos estructurados entre procesos. Los mensajes tienen un tipo que permite la recepción selectiva.
+
+msgget() — crear o acceder a una cola de mensajes:
+  PROTOTIPO:
+    #include <sys/types.h>
+    #include <sys/ipc.h>
+    #include <sys/msg.h>
+    int msgget(key_t key, int msgflg);
+
+  • Si key = IPC_PRIVATE → siempre crea una nueva cola.
+  • Si se usa llave de ftok() → especificar IPC_CREAT en msgflg.
+  • Retorna el identificador de la cola (msqid), o -1 en error.
+
+Estructura del mensaje (msgbuf):
   struct msgbuf {
-    long mtype;       // Tipo del mensaje (debe ser > 0)
-    char mtext[N];    // Cuerpo del mensaje
+    long mtype;      /* Tipo del mensaje; debe ser > 0 */
+    char mtext[N];   /* Datos del mensaje, de longitud N bytes */
   };
 
-Funciones principales:
+msgsnd() — enviar un mensaje:
+  PROTOTIPO:
+    int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 
-1. Crear/obtener la cola:
-   int msgget(key_t key, int msgflg);
-   • IPC_PRIVATE → crea una cola privada (sin llave).
-   • ftok() + IPC_CREAT → crea o accede a una cola compartida.
+  • msgsz  → tamaño del campo mtext (no incluye long mtype).
+  • msgflg → IPC_NOWAIT (no bloquear si la cola está llena) o 0 (bloquear).
 
-2. Enviar un mensaje:
-   int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
-   • msgsz → tamaño de mtext (sin incluir mtype).
-   • IPC_NOWAIT → no bloquear si la cola está llena.
+msgrcv() — recibir un mensaje:
+  PROTOTIPO:
+    ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 
-3. Recibir un mensaje:
-   ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
-   • msgtyp = 0   → primer mensaje de la cola (FIFO).
-   • msgtyp > 0   → primer mensaje de ese tipo exacto.
-   • msgtyp < 0   → primer mensaje con tipo ≤ |msgtyp|.
-   • MSG_NOERROR  → truncar si el mensaje es mayor que msgsz.
+  • msgtyp = 0   → leer el primer mensaje de la cola.
+  • msgtyp > 0   → leer el primer mensaje de tipo msgtyp.
+  • msgtyp < 0   → leer el primer mensaje con tipo ≤ |msgtyp|.
+  • msgflg       → IPC_NOWAIT, MSG_NOERROR (truncar si es muy grande), MSG_EXCEPT.
 
-4. Eliminar la cola:
-   msgctl(msqid, IPC_RMID, NULL);
+msgctl() — administrar la cola:
+  int msgctl(int msqid, int cmd, struct msqid_ds *buf);
 
-Comandos del sistema:
-  ipcs -q         → lista colas de mensajes activas.
-  ipcrm -q msqid  → elimina una cola.`,
-    code: `#include <stdio.h>
+  • IPC_STAT → leer la estructura de control en buf.
+  • IPC_SET  → modificar permisos/tamaño máximo de la cola.
+  • IPC_RMID → eliminar la cola (despierta procesos en espera con EIDRM).`,
+    code: `/* ************************************************************
+   Compilar: gcc -Wall mcola.c -o mcola
+   Ejecutar para enviar:  ./mcola s
+   Ejecutar para recibir: ./mcola r
+   ************************************************************ */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/msg.h>
-#include <sys/wait.h>
-
-#define TIPO_NORMAL  1
-#define TIPO_URGENTE 2
-#define TEXTO_MAX    80
 
 struct msgbuf {
     long mtype;
-    char mtext[TEXTO_MAX];
+    char mtext[80];
 };
 
+void send_msg(int qid, int msgtype) {
+    struct msgbuf msg;
+    time_t t;
+
+    msg.mtype = msgtype;
+    time(&t);
+    snprintf(msg.mtext, sizeof(msg.mtext),
+             "Mensaje enviado el: %s", ctime(&t));
+
+    if (msgsnd(qid, (void *)&msg, sizeof(msg.mtext), IPC_NOWAIT) == -1) {
+        perror("ERROR en msgsnd");
+        exit(EXIT_FAILURE);
+    }
+    printf("Mensaje enviado: %s\\n", msg.mtext);
+}
+
+void get_msg(int qid, int msgtype) {
+    struct msgbuf msg;
+
+    if (msgrcv(qid, (void *)&msg, sizeof(msg.mtext),
+               msgtype, MSG_NOERROR | IPC_NOWAIT) == -1) {
+        if (errno != ENOMSG) {
+            perror("ERROR en msgrcv");
+            exit(EXIT_FAILURE);
+        }
+        printf("No hay mensajes disponibles en la cola.\\n");
+    } else {
+        printf("Mensaje recibido: %s\\n", msg.mtext);
+    }
+}
+
 int main(int argc, char *argv[]) {
-    int   msqid;
+    int   qid, modo, msgtype = 1;
     key_t llave;
 
-    llave = ftok(argv[0], 'q');
-    if (llave == -1) { perror("ftok"); exit(1); }
-
-    msqid = msgget(llave, IPC_CREAT | 0666);
-    if (msqid == -1) { perror("msgget"); exit(1); }
-
-    printf("=== Cola de mensajes System V ===\\n");
-    printf("[MAIN] Cola creada: msqid=%d\\n\\n", msqid);
-
-    pid_t hijo = fork();
-    if (hijo < 0) { perror("fork"); exit(1); }
-
-    /* ---- HIJO: envía mensajes a la cola ---- */
-    if (hijo == 0) {
-        struct msgbuf msg;
-        time_t t;
-
-        /* Mensaje urgente */
-        msg.mtype = TIPO_URGENTE;
-        time(&t);
-        snprintf(msg.mtext, TEXTO_MAX,
-                 "[URGENTE] Alerta del hijo PID=%ld a las %s",
-                 (long)getpid(), ctime(&t));
-        msg.mtext[strlen(msg.mtext)-1] = '\\0'; // quitar \\n de ctime
-        msgsnd(msqid, &msg, sizeof(msg.mtext), 0);
-        printf("[HIJO]  Envió tipo=%ld: '%s'\\n", msg.mtype, msg.mtext);
-
-        /* Mensaje normal */
-        msg.mtype = TIPO_NORMAL;
-        snprintf(msg.mtext, TEXTO_MAX,
-                 "[NORMAL] Reporte del hijo PID=%ld", (long)getpid());
-        msgsnd(msqid, &msg, sizeof(msg.mtext), 0);
-        printf("[HIJO]  Envió tipo=%ld: '%s'\\n", msg.mtype, msg.mtext);
-
-        exit(EXIT_SUCCESS);
+    if (argc < 2 || (argv[1][0] != 's' && argv[1][0] != 'r')) {
+        printf("Uso: %s s|r\\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
 
-    /* ---- PADRE: recibe mensajes filtrando por tipo ---- */
-    wait(NULL); // Asegurarse de que el hijo envió ambos mensajes
+    modo  = (argv[1][0] == 's') ? 1 : 2;
+    llave = ftok(argv[0], 'a');
 
-    struct msgbuf recibido;
+    if ((qid = msgget(llave, IPC_CREAT | 0666)) == -1) {
+        perror("msgget");
+        exit(EXIT_FAILURE);
+    }
 
-    printf("[PADRE] Recibiendo primero el mensaje URGENTE (tipo=%d)...\\n",
-           TIPO_URGENTE);
-    msgrcv(msqid, &recibido, sizeof(recibido.mtext), TIPO_URGENTE, 0);
-    printf("[PADRE] Recibió tipo=%ld: '%s'\\n\\n",
-           recibido.mtype, recibido.mtext);
-
-    printf("[PADRE] Recibiendo ahora el mensaje NORMAL (tipo=%d)...\\n",
-           TIPO_NORMAL);
-    msgrcv(msqid, &recibido, sizeof(recibido.mtext), TIPO_NORMAL, 0);
-    printf("[PADRE] Recibió tipo=%ld: '%s'\\n",
-           recibido.mtype, recibido.mtext);
-
-    /* Eliminar la cola */
-    msgctl(msqid, IPC_RMID, NULL);
-    printf("\\n[MAIN] Cola msqid=%d eliminada.\\n", msqid);
+    if (modo == 1) send_msg(qid, msgtype);
+    else           get_msg(qid, msgtype);
 
     return EXIT_SUCCESS;
 }`,
     language: "c",
-    filename: "msgqueue_demo.c",
+    filename: "mcola.c",
     terminalLines: [
-      "$ gcc msgqueue_demo.c -o msgqueue_demo",
-      "$ ./msgqueue_demo",
+      "$ gcc -Wall mcola.c -o mcola",
       "",
-      "=== Cola de mensajes System V ===",
-      "[MAIN] Cola creada: msqid=3",
+      "# Terminal 1: enviar mensaje",
+      "$ ./mcola s",
+      "Mensaje enviado: Mensaje enviado el: Thu May 14 10:30:00 2026",
       "",
-      "[HIJO]  Envió tipo=2: '[URGENTE] Alerta del hijo PID=13001 a las Thu May 14 ...'",
-      "[HIJO]  Envió tipo=1: '[NORMAL] Reporte del hijo PID=13001'",
-      "[PADRE] Recibiendo primero el mensaje URGENTE (tipo=2)...",
-      "[PADRE] Recibió tipo=2: '[URGENTE] Alerta del hijo PID=13001 a las Thu May 14 ...'",
+      "# Terminal 2: recibir mensaje",
+      "$ ./mcola r",
+      "Mensaje recibido: Mensaje enviado el: Thu May 14 10:30:00 2026",
       "",
-      "[PADRE] Recibiendo ahora el mensaje NORMAL (tipo=1)...",
-      "[PADRE] Recibió tipo=1: '[NORMAL] Reporte del hijo PID=13001'",
+      "# Si no hay mensajes:",
+      "$ ./mcola r",
+      "No hay mensajes disponibles en la cola.",
       "",
-      "[MAIN] Cola msqid=3 eliminada.",
+      "# Ver el estado de la cola:",
+      "$ ipcs -q",
+      "------ Colas de mensajes ----",
+      "key        msqid    propietario perms   bytes mensajes",
+      "0x6100050e 3        gcgero      666     0     0",
     ],
-    terminalTitle: "Terminal — bash · msgqueue_demo",
+    terminalTitle: "Terminal — bash · mcola",
     conclusion:
-      "El filtrado por tipo es la característica distintiva de las colas de mensajes frente a los pipes: el receptor puede elegir qué tipo de mensaje leer independientemente del orden en que llegaron. En el ejemplo, aunque el padre espera hasta que el hijo envíe ambos mensajes, recibe primero el URGENTE aunque llegó primero a la cola. Esto es imposible con pipes o FIFOs, que son estrictamente FIFO sin filtrado.",
+      "Las colas de mensajes son el único mecanismo IPC de System V que preserva los límites entre mensajes (a diferencia de pipe que es un flujo continuo). El campo mtype permite que múltiples tipos de mensajes coexistan en la misma cola y que los receptores seleccionen solo los que les interesan. La cola persiste en el sistema hasta que se elimina explícitamente con msgctl(IPC_RMID) o con ipcrm.",
     improvements:
-      "Implementaría un servidor concurrente que despache diferentes tipos de mensajes a diferentes workers, usando msgrcv() con msgtyp=-N (leer el de menor tipo ≤ N) para implementar prioridades. También mediría el throughput con clock_gettime() y lo compararía con pipes y memoria compartida.",
+      "Implementar un sistema productor-consumidor con múltiples tipos de mensajes usando msgtyp para enrutamiento. Combinar la cola con un semáforo para controlar el acceso concurrente al envío. Comparar con las colas de mensajes POSIX (mq_open) que ofrecen mayor portabilidad y prioridad de mensajes.",
   },
+
+  // ─────────────────────────────────────────────────────────────────
+  // 3.5 Información de IPC por medio de comandos del sistema
+  // ─────────────────────────────────────────────────────────────────
   {
-    id: "ipc-practica-6",
-    number: 6,
-    title: "Inspección de objetos IPC con ipcs e /proc/sysvipc",
+    id: "tema-3-5",
+    number: 9,
+    title: "3.5 Información de IPC por medio de comandos del sistema",
     difficulty: "Básico" as const,
-    tags: ["ipcs", "ipcrm", "proc", "System V", "diagnóstico", "comandos"],
+    tags: ["ipcs", "ipcrm", "/proc/sysvipc", "comandos", "IPC", "administración"],
     objective:
-      "Inspeccionar los mecanismos IPC activos en el sistema usando el comando ipcs y los archivos virtuales del directorio /proc/sysvipc, y eliminar objetos IPC huérfanos con ipcrm.",
-    theory: `El sistema GNU/Linux ofrece dos vías para inspeccionar los objetos IPC System V activos:
+      "Usar los comandos del sistema ipcs e ipcrm para inspeccionar y administrar los objetos IPC activos, y conocer el directorio /proc/sysvipc y /proc/sys/kernel para monitorear y configurar los límites del sistema.",
+    theory: `GNU/Linux proporciona comandos y archivos de sistema para gestionar y monitorear todos los objetos IPC activos.
 
-1. Comando ipcs (IPC Status):
-   ipcs           → muestra colas, memoria compartida y semáforos.
-   ipcs -q        → solo colas de mensajes.
-   ipcs -m        → solo segmentos de memoria compartida.
-   ipcs -s        → solo conjuntos de semáforos.
-   ipcs -l        → límites del sistema para cada mecanismo.
+Comando ipcs — Information on IPC facilities:
+  • ipcs          → muestra los tres tipos de IPC (semáforos, memoria compartida, colas).
+  • ipcs -s       → solo semáforos.
+  • ipcs -m       → solo memoria compartida.
+  • ipcs -q       → solo colas de mensajes.
+  • ipcs -l       → límites del sistema para cada mecanismo.
 
-2. Sistema de archivos virtual /proc/sysvipc/:
-   /proc/sysvipc/msg → colas de mensajes.
-   /proc/sysvipc/shm → segmentos de memoria compartida.
-   /proc/sysvipc/sem → conjuntos de semáforos.
-   Estos archivos son de solo lectura y contienen información detallada del kernel.
+Comando ipcrm — Remove IPC objects:
+  • ipcrm -s <semid>  → eliminar semáforo por identificador.
+  • ipcrm -m <shmid>  → eliminar memoria compartida por identificador.
+  • ipcrm -q <msqid>  → eliminar cola de mensajes por identificador.
+  • ipcrm -S <llave>  → eliminar semáforo por llave.
+  • ipcrm -M <llave>  → eliminar memoria compartida por llave.
+  • ipcrm -Q <llave>  → eliminar cola de mensajes por llave.
 
-3. Límites del sistema en /proc/sys/kernel/:
-   shmmax  → tamaño máximo de un segmento de memoria compartida.
-   sem     → parámetros de semáforos (SEMMSL, SEMMNS, SEMOPM, SEMMNI).
-   msgmax  → tamaño máximo de un mensaje.
-   msgmnb  → tamaño máximo de la cola en bytes.
+Directorio /proc/sysvipc:
+  Contiene tres archivos de solo lectura con información en tiempo real:
+  • /proc/sysvipc/msg → colas de mensajes activas.
+  • /proc/sysvipc/sem → conjuntos de semáforos activos.
+  • /proc/sysvipc/shm → segmentos de memoria compartida activos.
 
-4. Eliminar objetos IPC huérfanos con ipcrm:
-   ipcrm -q msqid  → elimina cola de mensajes.
-   ipcrm -m shmid  → elimina segmento de memoria compartida.
-   ipcrm -s semid  → elimina conjunto de semáforos.
+Límites del sistema en /proc/sys/kernel/:
+  • /proc/sys/kernel/sem     → límites de semáforos (SEMMSL, SEMMNS, SEMOPM, SEMMNI).
+  • /proc/sys/kernel/shmmax  → tamaño máximo de un segmento de memoria compartida.
+  • /proc/sys/kernel/shmall  → páginas totales de memoria compartida.
+  • /proc/sys/kernel/msgmax  → tamaño máximo de un mensaje.
+  • /proc/sys/kernel/msgmnb  → tamaño máximo de la cola en bytes.
+  • /proc/sys/kernel/msgmni  → número máximo de colas de mensajes.
 
-Los objetos IPC System V persisten en el kernel hasta que se eliminan explícitamente (IPC_RMID / ipcrm), incluso si todos los procesos que los crearon ya terminaron.`,
-    code: `#!/bin/bash
-# Script de diagnóstico de IPC
-# Guarda como: ipc_diagnostico.sh
-# Ejecuta con: bash ipc_diagnostico.sh
+El sistema tiene límites asociados a cada mecanismo IPC para prevenir la creación arbitraria de objetos y el agotamiento de recursos.`,
+    code: `/* Script de demostración de comandos IPC del sistema
+   Crea un objeto de cada tipo, los observa y los elimina */
 
-echo "============================================"
-echo "  Diagnóstico de mecanismos IPC System V"
-echo "============================================"
-echo ""
+/* ── Paso 1: Crear objetos IPC de prueba ── */
+// gcc semaforos_sv.c -o sem_test && ./sem_test &  (en background)
+// gcc shm_demo.c -o shm_test && ./shm_test &
+// gcc mcola.c -o mq_test && ./mq_test s
 
-# --- Resumen general con ipcs ---
-echo ">>> ipcs (resumen general):"
-ipcs
-echo ""
+/* ── Paso 2: Listar todos los objetos IPC ── */
+// ipcs
 
-# --- Detalle de cada tipo ---
-echo ">>> Colas de mensajes (ipcs -q):"
-ipcs -q
-echo ""
+/* Salida esperada:
+------ Colas de mensajes ----
+key        msqid    propietario perms   bytes mensajes
+0x6100050e 3        gcgero      666     0     0
 
-echo ">>> Memoria compartida (ipcs -m):"
-ipcs -m
-echo ""
+---- Segmentos memoria compartida ---
+key        shmid    propietario perms   bytes   nattch estado
+0x00000000 884743   gcgero      600     1048576 2      dest
 
-echo ">>> Semáforos (ipcs -s):"
-ipcs -s
-echo ""
+------ Matrices semáforo ------
+key        semid    propietario perms   nsems
+0x6100050e 1        gcgero      600     2
+*/
 
-# --- Archivos virtuales /proc/sysvipc ---
-echo ">>> Contenido de /proc/sysvipc/:"
-ls -la /proc/sysvipc/
-echo ""
+/* ── Paso 3: Ver información en /proc/sysvipc ── */
+// ls /proc/sysvipc          → msg  sem  shm
+// cat /proc/sysvipc/sem     → semid perms nsems uid gid ...
 
-echo ">>> /proc/sysvipc/sem (semáforos en el kernel):"
-cat /proc/sysvipc/sem
-echo ""
+/* ── Paso 4: Ver límites del sistema ── */
+// cat /proc/sys/kernel/sem
+//   → 32000 1024000000 500 32000
+//   (SEMMSL SEMMNS SEMOPM SEMMNI)
 
-echo ">>> /proc/sysvipc/shm (memoria compartida en el kernel):"
-cat /proc/sysvipc/shm
-echo ""
+// cat /proc/sys/kernel/shmmax
+//   → 18446744073692774399   (bytes)
 
-# --- Límites del sistema ---
-echo ">>> Límites IPC (/proc/sys/kernel/):"
-echo -n "  shmmax (máx. bytes por segmento SHM): "
-cat /proc/sys/kernel/shmmax
-echo -n "  msgmax (máx. bytes por mensaje):      "
-cat /proc/sys/kernel/msgmax
-echo -n "  sem (SEMMSL SEMMNS SEMOPM SEMMNI):    "
-cat /proc/sys/kernel/sem
-echo ""
+// cat /proc/sys/kernel/msgmax
+//   → 8192   (bytes por mensaje)
 
-echo ">>> Límites formateados (ipcs -l):"
-ipcs -l`,
-    language: "bash",
-    filename: "ipc_diagnostico.sh",
+/* ── Paso 5: Eliminar objetos IPC ── */
+// ipcrm -s 1      → eliminar semáforo con semid=1
+// ipcrm -m 884743 → eliminar memoria compartida con shmid=884743
+// ipcrm -q 3      → eliminar cola de mensajes con msqid=3
+
+/* ── Paso 6: Verificar que fueron eliminados ── */
+// ipcs
+// (debe aparecer vacío o sin los objetos eliminados)`,
+    language: "c",
+    filename: "ipc_comandos.c",
     terminalLines: [
-      "$ bash ipc_diagnostico.sh",
+      "$ ipcs",
+      "------ Colas de mensajes ----",
+      "key        msqid  propietario perms  bytes mensajes",
+      "0x6100050e 3      gcgero      666    0     0",
       "",
-      "============================================",
-      "  Diagnóstico de mecanismos IPC System V",
-      "============================================",
-      "",
-      ">>> ipcs (resumen general):",
-      "------ Colas de mensajes ------",
-      "clave      msqid  propietario  perms  bytes  mensajes",
-      "",
-      "------ Segmentos memoria compartida ------",
-      "clave      shmid  propietario  perms  bytes    nattch  estado",
-      "0x00000000 884743 gcgero       600    1048576  2       dest",
+      "---- Segmentos memoria compartida ---",
+      "key        shmid  propietario perms  bytes   nattch estado",
+      "0x00000000 884743 gcgero      600    1048576 0      dest",
       "",
       "------ Matrices semáforo ------",
-      "clave      semid  propietario  perms  nsems",
-      "0x6100050e 1      gcgero       600    2",
+      "key        semid  propietario perms  nsems",
+      "0x6100050e 1      gcgero      600    2",
       "",
-      ">>> /proc/sysvipc/sem (semáforos en el kernel):",
-      "key        semid perms nsems uid gid cuid cgid  otime   ctime",
-      "1627391246 1     600   2     1000 1000 1000 1000 1772583562 1772583561",
+      "$ cat /proc/sysvipc/sem",
+      "key       semid perms nsems uid  gid  cuid cgid otime            ctime",
+      "1627391246 1    600   2     1000 1000 1000 1000 1772583562 1772583561",
       "",
-      ">>> Límites IPC (/proc/sys/kernel/):",
-      "  shmmax (máx. bytes por segmento SHM): 18446744073692774399",
-      "  msgmax (máx. bytes por mensaje):      8192",
-      "  sem (SEMMSL SEMMNS SEMOPM SEMMNI):    32000 1024000000 500 32000",
+      "$ cat /proc/sys/kernel/sem",
+      "32000  1024000000  500  32000",
       "",
-      "$ ipcrm -s 1",
-      "$ ipcs -s",
+      "$ cat /proc/sys/kernel/shmmax",
+      "18446744073692774399",
+      "",
+      "$ ipcrm -s 1 && ipcrm -m 884743 && ipcrm -q 3",
+      "$ ipcs",
+      "------ Colas de mensajes ----",
+      "---- Segmentos memoria compartida ---",
       "------ Matrices semáforo ------",
-      "clave  semid  propietario  perms  nsems",
       "(vacío)",
     ],
-    terminalTitle: "Terminal — bash · ipc_diagnostico.sh",
+    terminalTitle: "Terminal — bash · ipc_comandos",
     conclusion:
-      "Los objetos IPC System V son recursos del kernel que sobreviven a los procesos que los crean. En entornos de desarrollo es común encontrar objetos huérfanos de ejecuciones anteriores que fallaron sin limpiar. ipcs e ipcrm son herramientas esenciales para diagnosticar y limpiar estos recursos. El directorio /proc/sysvipc proporciona la misma información directamente desde el kernel, útil para scripts de monitoreo.",
+      "Los comandos ipcs e ipcrm son herramientas esenciales para la administración del sistema. Los objetos IPC de System V persisten aunque los procesos que los crearon hayan terminado, por lo que es común encontrar objetos 'huérfanos' que deben eliminarse manualmente. El directorio /proc/sysvipc proporciona una vista en tiempo real del estado interno del kernel para cada mecanismo IPC.",
     improvements:
-      "Escribiría un script de limpieza automática que liste todos los objetos IPC del usuario actual y los elimine con ipcrm en un solo comando. También exploraría los límites del sistema con ipcs -l y los ajustaría en /proc/sys/kernel para simular restricciones de recursos en entornos embebidos.",
+      "Crear un script de shell que liste todos los objetos IPC de un usuario y los elimine de forma selectiva. Monitorear en tiempo real los cambios en /proc/sysvipc mientras los programas de prueba se ejecutan. Ajustar los límites de /proc/sys/kernel/sem y shmmax (con echo > archivo como root) y observar el efecto.",
   },
 ];
 
@@ -773,7 +1097,7 @@ export function IPC() {
               className="text-xs font-medium text-muted-foreground uppercase tracking-widest"
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
-              Tema 3 · 6 Prácticas
+              Tema 3 · 3 Prácticas
             </p>
             <h1
               className="text-foreground"
@@ -787,10 +1111,10 @@ export function IPC() {
           className="text-muted-foreground leading-relaxed max-w-2xl"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          Esta sección explora los mecanismos de comunicación entre procesos (IPC) en GNU/Linux. Se estudian las tuberías sin nombre (pipe) y con nombre (fifo), los mecanismos derivados de System V —semáforos, memoria compartida y colas de mensajes— y las herramientas del sistema para inspeccionar y gestionar estos recursos.
+          Comunicación entre Procesos (Inter-Process Communication). Se exploran los tres mecanismos principales: pipes anónimos para comunicación padre-hijo, memoria compartida POSIX para máximo rendimiento, y semáforos para sincronización de acceso a recursos compartidos.
         </p>
         <div className="flex flex-wrap gap-2">
-          {["pipe()", "mkfifo()", "ftok()", "semget()", "semop()", "shmget()", "shmat()", "msgget()", "msgsnd()", "msgrcv()", "ipcs", "/proc/sysvipc"].map((tag) => (
+          {["pipe()", "shm_open()", "mmap()", "sem_init()", "sem_wait()", "sem_post()"].map((tag) => (
             <span
               key={tag}
               className="px-2.5 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
