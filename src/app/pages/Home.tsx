@@ -36,6 +36,17 @@ const topics = [
     iconColor: "text-emerald-500",
     practices: 3,
   },
+  {
+    icon: <Terminal className="size-6" />,
+    label: "MiniShell",
+    title: "MiniShell",
+    description:
+      "Implementación de un intérprete de comandos básico en C.",
+    to: "/minishell",
+    color: "from-blue-500/20 to-blue-600/5 border-blue-500/30",
+    iconColor: "text-blue-500",
+    practices: 1,
+  },
 ];
 
 export function Home() {
@@ -111,6 +122,9 @@ export function Home() {
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link to="/procesos">Ver Procesos e Hilos</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link to="/minishell">Ver MiniShell</Link>
             </Button>
           </div>
         </div>
