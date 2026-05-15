@@ -8,7 +8,8 @@ interface PracticeCardProps {
   number: number;
   title: string;
   objective: string;
-  theory: string;
+  theory?: string;
+  theoryNode?: React.ReactNode;
   code: string;
   language?: string;
   filename?: string;
@@ -32,6 +33,7 @@ export function PracticeCard({
   title,
   objective,
   theory,
+  theoryNode,
   code,
   language = "c",
   filename,
@@ -106,12 +108,16 @@ export function PracticeCard({
               Marco Teórico
             </h3>
           </div>
-          <p
-            className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            {theory}
-          </p>
+          {theoryNode ? (
+            theoryNode
+          ) : (
+            <p
+              className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              {theory}
+            </p>
+          )}
         </div>
 
         {/* Code */}

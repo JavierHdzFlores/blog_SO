@@ -20,6 +20,7 @@ interface NavItem {
   subitems: SubItem[];
 }
 
+/* Fragmento de Sidebar.tsx actualizado */
 const navItems: NavItem[] = [
   {
     label: "Introducción a Linux",
@@ -30,6 +31,7 @@ const navItems: NavItem[] = [
       { label: "Comandos del Sistema de Archivos", anchor: "practica-1" },
       { label: "Usuarios y Permisos", anchor: "practica-2" },
       { label: "Scripts de Shell", anchor: "practica-3" },
+      { label: "Proyecto: MiniShell", anchor: "minishell" }, // Se añade el MiniShell aquí
     ],
   },
   {
@@ -38,9 +40,16 @@ const navItems: NavItem[] = [
     icon: <Cpu className="size-4" />,
     badge: "Tema 2",
     subitems: [
-      { label: "Creación de Procesos (fork)", anchor: "practica-1" },
-      { label: "Creación de Hilos (pthread)", anchor: "practica-2" },
-      { label: "Sincronización con Mutex", anchor: "practica-3" },
+      { label: "2.1 Introducción a procesos", anchor: "tema-2-1" }, //
+      { label: "2.2 Creación con fork()", anchor: "tema-2-2" },
+      { label: "2.4 Sistema de llamadas para crear procesos -fork()", anchor: "tema-2-4" },
+      { label: "2.5 Sistema de llamada wait()", anchor: "tema-2-5" },
+      { label: "2.6 Sistema de llamada _exit() y exit()", anchor: "tema-2-6" },
+      { label: "2.7 Estado Zombi", anchor: "tema-2-7" },
+      { label: "2.8 Hilos", anchor: "tema-2-8" },
+      // { label: "2.8.2 Creación de hilos con pthread_create()", anchor: "tema-2-8-2" }
+
+
     ],
   },
   {
@@ -49,13 +58,30 @@ const navItems: NavItem[] = [
     icon: <Network className="size-4" />,
     badge: "Tema 3",
     subitems: [
-      { label: "Pipes Anónimos", anchor: "practica-1" },
-      { label: "Memoria Compartida", anchor: "practica-2" },
-      { label: "Semáforos POSIX", anchor: "practica-3" },
+      { label: "3.1 Comunicación mediante tuberías", anchor: "tema-3-1" }, //
+      { label: "3.1.1 Tuberías sin nombre — pipe()", anchor: "tema-3-2-1" },
+      { label: "3.1.2 Tuberías con nombre — FIFO (mkfifo)s", anchor: "tema-3-2-2" },
+      { label: "3.2 Mecanismos IPC derivados de System V", anchor: "tema-3-2" },
+      { label: "3.2.1 Llaves — ftok()", anchor: "tema-3-2-1" },
+      { label: "3.2.2 Semáforos en derivados de System V", anchor: "tema-3-2-2" },
+      { label: "3.3 Memoria compartida — shmget, shmat, shmdt, shmctl", anchor: "tema-3-3" },
+      { label: "3.4 Cola de mensajes — msgget, msgsnd, msgrcv, msgctl", anchor: "tema-3-4" },
+      { label: "3.5 Información de IPC por medio de comandos del sistema", anchor: "tema-3-5" }
+    ],
+  },
+  {
+    label: "MiniShell",
+    to: "/minishell",
+    icon: <Terminal className="size-4" />,
+    badge: "Proyecto",
+    subitems: [
+      { label: "Introducción", anchor: "introduccion" },
+      { label: "Funcionalidades", anchor: "funcionalidades" },
+      { label: "Implementación", anchor: "implementacion" },
     ],
   },
 ];
-
+      
 export function Sidebar() {
   const location = useLocation();
 
