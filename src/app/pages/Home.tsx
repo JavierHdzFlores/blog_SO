@@ -37,6 +37,29 @@ const topics = [
     practices: 3,
   },
   {
+    icon: <Network className="size-6" />,
+    label: "Tema 5",
+    title: "Administración de memoria",
+    description:
+      "Paginación y segmentación de la memoria como herramientas clave para la administración de la memoria.",
+    to: "/adminMemo",
+    color: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
+    iconColor: "text-emerald-500",
+    practices: 3,
+  },
+  {
+    icon: <Network className="size-6" />,
+    label: "Tema 6",
+    title: "Arquitectura del sistema de archivos",
+    description:
+      "Paginación y segmentación de la memoria como herramientas clave para la administración de la memoria.",
+    to: "/arquiSistemAchr",
+    color: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
+    iconColor: "text-emerald-500",
+    practices: 3,
+  },
+
+  {
     icon: <Terminal className="size-6" />,
     label: "MiniShell",
     title: "MiniShell",

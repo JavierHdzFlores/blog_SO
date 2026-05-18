@@ -70,6 +70,47 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    label: "Administración de memoria ",
+    to: "/adminMemo",
+    icon: <Terminal className="size-4" />,
+    badge: "Tema 5",
+    subitems: [
+      { label: "5.1 Introducción", anchor: "tema-5-1" },
+      { label: "5.2 Administración de memoria sin intercambio o paginación", anchor: "tema-5-2" },
+      { label: "5.3 Modelos de multiprogramación", anchor: "tema-5-3" },
+      { label: "5.4 Multiprogramación con particiones fijas", anchor: "tema-5-4" },
+      { label: "5.5 Reasignación y protección", anchor: "tema-5-5" },
+      { label: "5.6 Intercambio", anchor: "tema-5-6" },
+      { label: "5.7 Administración de la memoria con mapas de bits", anchor: "tema-5-7" },
+      { label: "5.8 Administración de la memoria con listas ligadas", anchor: "tema-5-8" },
+      { label: "5.9 Memoria virtual", anchor: "tema-5-9" },
+      { label: "5.10 Funciones para conocer la memoria del sistema", anchor: "tema-5-10" },
+      { label: "5.10.1 Función sysinfo", anchor: "tema-5-10-1" },
+      { label: "5.10.2 Función mmap y munmap", anchor: "tema-5-10-2" },
+      
+    ],
+  },
+  {
+    label: "Arquitectura del sistema de archivos ",
+    to: "/arquiSistemAchr",
+    icon: <Terminal className="size-4" />,
+    badge: "Tema 6",
+    subitems: [
+      { label: "6.1 Introducción", anchor: "tema-6-1" },
+      { label: "6.2 Estructura del sistema de archivos", anchor: "tema-6-2" },
+      { label: "6.2.1 El superbloque", anchor: "tema-6-2-1" },
+      { label: "6.2.2 Nodos índices (inodos)", anchor: "tema-6-2-2" },
+      { label: "6.3 Tipos de archivos en UNIX", anchor: "tema-6-3" },
+      { label: "6.3.1 Archivos tipo Directorios", anchor: "tema-6-3-1" },
+      { label: "6.3.2 Archivos tipo Dispositivos", anchor: "tema-6-3-2" },
+      { label: "6.3.3 Archivos tipo Comunicación", anchor: "tema-6-3-3" },
+      { label: "6.4 Dispositivos de entrada y salida", anchor: "tema-6-4" },
+      { label: "6.4.1 Función ioctl", anchor: "tema-6-4-1" },
+      { label: "6.4.2 Unidad de disco.", anchor: "tema-6-4-2" },
+    ],
+  },
+
+  {
     label: "MiniShell",
     to: "/minishell",
     icon: <Terminal className="size-4" />,
@@ -80,6 +121,7 @@ const navItems: NavItem[] = [
       { label: "Implementación", anchor: "implementacion" },
     ],
   },
+  
 ];
       
 export function Sidebar() {
