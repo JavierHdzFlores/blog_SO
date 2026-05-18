@@ -52,7 +52,7 @@ const topics = [
     label: "Tema 6",
     title: "Arquitectura del sistema de archivos",
     description:
-      "Paginación y segmentación de la memoria como herramientas clave para la administración de la memoria.",
+      "Estructuración y distribución de los archivos en UNIX.",
     to: "/arquiSistemAchr",
     color: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
     iconColor: "text-emerald-500",

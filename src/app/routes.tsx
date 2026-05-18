@@ -6,6 +6,7 @@ import { Processes } from "./pages/Processes";
 import { IPC } from "./pages/IPC";
 import { About } from "./pages/About";
 import { MiniShell } from "./pages/MiniShell";
+import { AdminMemo } from "./pages/AdminMemo";  
 
 function NotFound() {
   return (
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: "linux", Component: LinuxIntro },
       { path: "procesos", Component: Processes },
       { path: "ipc", Component: IPC },
+      { path: "adminMemo", Component: AdminMemo },
       { path: "acerca", Component: About },
       {path: "minishell", Component: MiniShell},
       { path: "*", Component: NotFound },
