@@ -1,10 +1,7 @@
-import { Network } from "lucide-react";
+import { Terminal } from "lucide-react";
 import { PracticeCard } from "../components/PracticeCard";
 
 const practices = [
-  // ─────────────────────────────────────────────────────────────────
-  // 5.1 Introducción 
-  // ─────────────────────────────────────────────────────────────────
   // ─────────────────────────────────────────────────────────────────
   // 5.1 Introducción a la Administración de Memoria
   // ─────────────────────────────────────────────────────────────────
@@ -1753,7 +1750,6 @@ int main() {
       "Implementar un ejemplo de memoria compartida entre procesos usando mmap con MAP_SHARED (sin archivo, con MAP_ANONYMOUS | MAP_SHARED) y fork. Usar msync para forzar la sincronización de cambios a disco. Explorar el uso de mprotect para cambiar permisos de una región mapeada. Investigar el flag MAP_LOCKED para evitar paginación. Analizar /proc/iomem con un script que extraiga las regiones del kernel."
   },
 ];
-
 export function AdminMemo() {
   return (
     <div className="flex flex-col gap-8">
@@ -1761,14 +1757,14 @@ export function AdminMemo() {
       <div className="flex flex-col gap-4 pb-6 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30">
-            <Network className="size-5 text-emerald-500" />
+            <Terminal className="size-5 text-emerald-500" />
           </div>
           <div>
             <p
               className="text-xs font-medium text-muted-foreground uppercase tracking-widest"
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
-              Tema 5 · 5 Prácticas
+              Tema 5 · {practices.length} Prácticas
             </p>
             <h1
               className="text-foreground"
@@ -1782,10 +1778,19 @@ export function AdminMemo() {
           className="text-muted-foreground leading-relaxed max-w-2xl"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-            Uso de paginación y segmentación de la memoria para usar de manera eficiente un recurso tan valioso como lo es la memoria 
+          Particiones fijas, intercambio (swap), mapas de bits, listas ligadas, memoria virtual,
+          sysinfo y mmap para usar de manera eficiente un recurso tan valioso como la memoria.
         </p>
         <div className="flex flex-wrap gap-2">
-          {["pipe()", "shm_open()", "mmap()", "sem_init()", "sem_wait()", "sem_post()"].map((tag) => (
+          {[
+            "particiones fijas",
+            "swap",
+            "mapa de bits",
+            "lista ligada",
+            "memoria virtual",
+            "sysinfo",
+            "mmap",
+          ].map((tag) => (
             <span
               key={tag}
               className="px-2.5 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
