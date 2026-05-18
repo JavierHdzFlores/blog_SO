@@ -92,7 +92,7 @@ const navItems: NavItem[] = [
   },
   {
     label: "Arquitectura del sistema de archivos ",
-    to: "/arquiSistemAchr",
+    to: "/arquiSistem",
     icon: <Terminal className="size-4" />,
     badge: "Tema 6",
     subitems: [

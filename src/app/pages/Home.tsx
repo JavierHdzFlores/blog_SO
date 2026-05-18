@@ -53,7 +53,7 @@ const topics = [
     title: "Arquitectura del sistema de archivos",
     description:
       "Estructuración y distribución de los archivos en UNIX.",
-    to: "/arquiSistemAchr",
+    to: "/arquiSistem",
     color: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
     iconColor: "text-emerald-500",
     practices: 3,
